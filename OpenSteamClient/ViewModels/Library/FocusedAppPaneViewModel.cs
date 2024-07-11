@@ -304,7 +304,7 @@ public partial class FocusedAppPaneViewModel : AvaloniaCommon.ViewModelBase
             Console.WriteLine("Error launching app " + e.ToString());
             try
             {
-                MessageBox.Error("Error launching app " + this.name, "Exception message: " + e.Message, e.ToString());
+                MessageBox.Error("Error launching app " + this.Name, "Exception message: " + e.Message, e.ToString());
             }
             catch (System.Exception)
             {

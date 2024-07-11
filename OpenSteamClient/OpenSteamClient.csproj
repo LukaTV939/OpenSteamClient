@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <!-- Required by MainExe -->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+
+    <OutputType>Library</OutputType>
     <TargetFramework>$(CommonNetVersion)</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>

@@ -554,24 +554,16 @@ public class Bootstrapper {
         string runtimeLibraryPath = runtimeProcess.StandardOutput.ReadToEnd();
         UtilityFunctions.SetEnvironmentVariable("STEAM_RUNTIME_LIBRARY_PATH", runtimeLibraryPath);
         UtilityFunctions.SetEnvironmentVariable("LD_LIBRARY_PATH", $"{Path.Combine(installManager.InstallDir, "ubuntu12_64")}:{Path.Combine(installManager.InstallDir, "ubuntu12_32")}:{Path.Combine(installManager.InstallDir)}:{runtimeLibraryPath}");
-        try
-        {
-            File.Copy(Path.Combine(installManager.InstallDir, "libbootstrappershim64.so"), "/tmp/libbootstrappershim64.so", true);
-
-            // Only set the variable if the copy actually succeeded
-            UtilityFunctions.SetEnvironmentVariable("LD_PRELOAD", "/tmp/libbootstrappershim64.so");
-        }
-        catch (Exception e)
-        {
-            logger.Warning("Failed to copy " + Path.Combine(installManager.InstallDir, "libbootstrappershim64.so") + " to /tmp/libbootstrappershim64.so: " + e.ToString());
-            logger.Warning("Family sharing (among other unknown things) will be unavailable.");
-        }
         
         string?[] fullArgs = Environment.GetCommandLineArgs();
 
         string executable = Directory.ResolveLinkTarget("/proc/self/exe", false)!.FullName;
         logger.Debug("Re-exec executable: " + executable);
         if (!executable.EndsWith("dotnet")) {
+            if (fullArgs == null || fullArgs.Length == 0) {
+                fullArgs = new string[1];
+            }
+
             fullArgs[0] = executable;
             fullArgs = fullArgs.Append(null).ToArray();
         } else {
@@ -975,19 +967,20 @@ public class Bootstrapper {
         using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CopyOpensteamFiles");
 
         // Specify path mappings here to copy certain natives
-        Dictionary<string, string> pathMappings = new() {
-            {"reaper", "linux64/reaper"},
-            {"steam-launch-wrapper", "linux64/steam-launch-wrapper"},
-            {"steamserviced.exe", "bin/steamserviced.exe"},
-            {"steamserviced.pdb", "bin/steamserviced.pdb"},
-            {"htmlhost", "ubuntu12_32/htmlhost"},
-            {"steamservice.so", "linux64/steamservice.so"},
-            {"libaudio.so", "libaudio.so"},
-            {"steamserviced", "steamserviced"},
-            {"libprotobufhack.so", "libprotobufhack.so"},
-            {"libbootstrappershim32.so", "libbootstrappershim32.so"},
-            {"libbootstrappershim64.so", "libbootstrappershim64.so"},
-            {"libhtmlhost_fakepid.so", "libhtmlhost_fakepid.so"},
+        List<KeyValuePair<string, string>> pathMappings = new() {
+            new("reaper", "linux64/reaper"),
+            new("steam-launch-wrapper", "linux64/steam-launch-wrapper"),
+            new("steamserviced.exe", "bin/steamserviced.exe"),
+            new("steamserviced.pdb", "bin/steamserviced.pdb"),
+            new("htmlhost", "ubuntu12_32/htmlhost"),
+            new("steamservice.so", "linux64/steamservice.so"),
+            new("steamservice.so", "steamservice.so"),
+            new("libaudio.so", "libaudio.so"),
+            new("steamserviced", "steamserviced"),
+            new("libprotobufhack.so", "libprotobufhack.so"),
+            new("libbootstrappershim32.so", "libbootstrappershim32.so"),
+            new("libbootstrappershim64.so", "libbootstrappershim64.so"),
+            new("libhtmlhost_fakepid.so", "libhtmlhost_fakepid.so"),
         };
 
         var assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -1013,26 +1006,27 @@ public class Bootstrapper {
             nativesFolder = assemblyFolder;
         }
 
+        if (!string.IsNullOrEmpty(bootstrapperState.CustomNativesPath)) {
+            // Don't check the path the user gives here, we don't care.
+            nativesFolder = bootstrapperState.CustomNativesPath;
+        }
+
         bool copiedAnyFiles = false;
 
         progressHandler.SetSubOperation("Copying OpenSteam files");
-        var di = new DirectoryInfo(nativesFolder);
-        foreach (var file in di.EnumerateFilesRecursively())
+        foreach (var pathMapping in pathMappings)
         {
-            if (file.Extension == ".lib" || file.Extension == ".exp" || file.Extension == ".a") {
+            var source = Path.Combine(nativesFolder, pathMapping.Key);
+            var target = Path.Combine(installManager.InstallDir, pathMapping.Value);
+        
+            if (!File.Exists(source)) {
+                logger.Debug("File " + source + " does not exist.");
                 continue;
             }
 
-            string name = file.Name;
-            if (pathMappings.ContainsKey(name)) {
-                name = pathMappings[name];
-            } else {
-                continue;
-            }
-
+            logger.Info("Copying " + pathMapping.Key + " to " + target);
+            File.Copy(source, target, true);
             copiedAnyFiles = true;
-            logger.Info("Copying " + file.FullName + " to " + Path.Combine(installManager.InstallDir, name));
-            File.Copy(file.FullName, Path.Combine(installManager.InstallDir, name), true);
         }
 
         if (!copiedAnyFiles) {

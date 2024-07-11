@@ -1,0 +1,124 @@
+<Project Sdk="MSBuildCMake.SDK/1.0.9">
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageId>OpenSteamClient.MainExe</PackageId>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/OpenSteamClient/OpenSteamClient</RepositoryUrl>
+
+        <!-- Update the version here when you make changes -->
+        <VersionPrefix>1.0.0</VersionPrefix>
+
+        <!-- The directory where CMakeLists.txt is located. Mandatory property. -->
+        <CMakeListsDir>$(MSBuildThisFileDirectory)</CMakeListsDir>
+        
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        
+        <CMakeDisableRIDSubfolder>true</CMakeDisableRIDSubfolder>
+        <AddNativesAsContent>true</AddNativesAsContent>
+        <CMakeBuildConfig>Debug</CMakeBuildConfig>
+    </PropertyGroup>
+
+    <Target Name="AbsolutizePaths" BeforeTargets="Build">
+        <PropertyGroup>
+            <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath)))</IntermediateOutputPath>
+            <OutputPath>$([MSBuild]::NormalizeDirectory($(OutputPath)))</OutputPath>
+            <OutDir>$([MSBuild]::NormalizeDirectory($(OutDir)))</OutDir>
+        </PropertyGroup>
+    </Target>
+    
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <Import Project="msbuild/GetEffectiveRuntimeIdentifier.props"/>
+
+     <PropertyGroup>
+        <EffectiveRuntimeIdentifierOS>$(EffectiveRuntimeIdentifier.Substring(0, $(EffectiveRuntimeIdentifier.IndexOf('-'))))</EffectiveRuntimeIdentifierOS>
+    </PropertyGroup>
+
+    <!-- Allow running this project -->
+    <PropertyGroup Condition="'$(EffectiveRuntimeIdentifierOS)' == 'linux'">
+        <OutputExeName>OpenSteamClient</OutputExeName>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(EffectiveRuntimeIdentifierOS)' == 'win'">
+        <OutputExeName>OpenSteamClient.exe</OutputExeName>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(EffectiveRuntimeIdentifierOS)' == 'osx'">
+        <OutputExeName>OpenSteamClient</OutputExeName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- MSBuild does not populate the OutputPath at the correct time for things to work easily. -->
+        <RunCommand Condition="'$(OutputPath)' != ''">$(OutputPath)\$(OutputExeName)</RunCommand>
+
+        <!-- So if no outputpath is set, just guess one ourselves -->
+        <RunCommand Condition="'$(OutputPath)' == ''">bin\$(Configuration)\$(OutputExeName)</RunCommand>
+    </PropertyGroup>
+
+    <Target Name="GetAllNethosts">
+        <PropertyGroup>
+            <NetHostOutputPath>$(IntermediateOutputPath)\NetHosts\</NetHostOutputPath>
+        </PropertyGroup>
+
+        <Message Importance="High" Text="Copying nethosts to '$(NetHostOutputPath)'"/>
+        <MSBuild Projects="$(MSBuildThisFileDirectory)\nugetpkgs\nugetpkgs.csproj" RemoveProperties="RuntimeIdentifier;ArtifactsPath" Targets="Restore;Build" Properties="_OutputPath=$(NetHostOutputPath);_RuntimeIdentifier=linux-x64;AppendTargetFrameworkToOutputPath=false;AppendRuntimeIdentifierToOutputPath=false" />
+        <MSBuild Projects="$(MSBuildThisFileDirectory)\nugetpkgs\nugetpkgs.csproj" RemoveProperties="RuntimeIdentifier;ArtifactsPath" Targets="Restore;Build" Properties="_OutputPath=$(NetHostOutputPath);_RuntimeIdentifier=osx-x64;AppendTargetFrameworkToOutputPath=false;AppendRuntimeIdentifierToOutputPath=false" />
+        <MSBuild Projects="$(MSBuildThisFileDirectory)\nugetpkgs\nugetpkgs.csproj" RemoveProperties="RuntimeIdentifier;ArtifactsPath" Targets="Restore;Build" Properties="_OutputPath=$(NetHostOutputPath);_RuntimeIdentifier=win-x64;AppendTargetFrameworkToOutputPath=false;AppendRuntimeIdentifierToOutputPath=false" />
+    </Target>
+
+    <Target Name="BuildManaged">
+        <PropertyGroup>
+            <ManagedOutputPath>$(IntermediateOutputPath)\Managed\</ManagedOutputPath>
+        </PropertyGroup>
+
+        <Message Importance="High" Text="Building managed to '$(ManagedOutputPath)', output: '$(PublishDir)'"/>
+        <Exec ConsoleToMSBuild="true" Command="dotnet build --runtime $(EffectiveRuntimeIdentifier) --self-contained --output &quot;$(ManagedOutputPath)&quot;" WorkingDirectory="$(ProjectRootDir)\OpenSteamClient"/>
+        <!-- This is how it should be done, but it errors the first time for unknown reasons so I wouldn't bother trying to fix it -->
+        <!-- <MSBuild Projects="$(ProjectRootDir)\OpenSteamClient\OpenSteamClient.csproj" RemoveProperties="RuntimeIdentifier;ArtifactsPath" Targets="Restore;Build" Properties="Configuration=$(Configuration);OutputPath=$(ManagedOutputPath)" /> -->
+        
+        <!-- No, you cannot just add the files as Content/None, because the folder structure will not be kept (all my homies hate MSBuild) -->
+        <!-- Feel free to try and fix it though, but I wouldn't waste my time on it. -->
+        <ItemGroup>
+            <SHITSTUPIDMSBUILD Include="$(ManagedOutputPath)\**\*"/>
+        </ItemGroup>
+
+        <!-- Only do this if we're publishing -->
+        <Copy Condition="'$(_IsPublishing)' != ''" SourceFiles="@(SHITSTUPIDMSBUILD)" DestinationFolder="$(PublishDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+
+        <!-- Only do this if we're building normally -->
+        <Copy Condition="'$(_IsPublishing)' == ''" SourceFiles="@(SHITSTUPIDMSBUILD)" DestinationFolder="$(OutputPath)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    </Target>
+
+    <!-- This runs everytime, but it's fine since CMake quits fast if the output is up to date -->
+    <Target Name="PreBuild" BeforeTargets="Build">
+        <PropertyGroup>
+            <NetHostOutputPath>$(IntermediateOutputPath)\NetHosts\</NetHostOutputPath>
+        </PropertyGroup>
+
+        <!-- First build the managed lib -->
+        <MSBuild Projects="$(MSBuildThisFile)" Targets="BuildManaged" />
+
+        <!-- Windows is the last target in the list above, so use it here -->
+        <MSBuild Condition="!Exists('$(NetHostOutputPath)\win-x64\libnethost.lib')" Projects="$(MSBuildThisFile)" Targets="GetAllNethosts" />
+    
+        <PropertyGroup>
+            <CMakeExtraFlags>-DNetHostOutputPath="$(NetHostOutputPath)" $(CMakeExtraFlags)</CMakeExtraFlags>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="PreClean" BeforeTargets="Clean">
+        <MSBuild Projects="$(ProjectRootDir)\OpenSteamClient\OpenSteamClient.csproj" Targets="Clean" />
+    </Target>
+
+    <Target Name="PostBuild" AfterTargets="Build">
+        <ItemGroup>
+            <BuiltHostBinary Include="$(OutDir)\$(RuntimeIdentifier)\native\**\*"/>
+        </ItemGroup>
+        
+        <Message Importance="High" Text="fdgdfsg" />
+        <Copy SourceFiles="@(BuiltHostBinary)" DestinationFolder="$(OutDir)"/>
+    </Target>
+</Project>

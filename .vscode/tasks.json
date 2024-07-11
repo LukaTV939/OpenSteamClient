@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/OpenSteamClient/OpenSteamClient.csproj",
+                "${workspaceFolder}/MainExe/MainExe.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

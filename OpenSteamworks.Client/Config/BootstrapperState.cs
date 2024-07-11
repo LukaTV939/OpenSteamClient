@@ -10,9 +10,6 @@ public class BootstrapperState : IConfigFile
     static bool IConfigFile.AlwaysSave => false;
 
     [ConfigNeverVisible]
-    public uint NativeBuildDate { get; set; } = 0;
-
-    [ConfigNeverVisible]
     public uint InstalledVersion { get; set; } = 0;
 
     [ConfigNeverVisible]
@@ -23,6 +20,12 @@ public class BootstrapperState : IConfigFile
     [ConfigCategory("Bootstrapper", "#BootstrapperState_Category_Bootstrapper")]
     [ConfigAdvanced]
     public bool SkipVerification { get; set; } = false;
+
+    [ConfigName("Custom natives path", "#BootstrapperState_CustomNativesPath")]
+    [ConfigDescription("Sets the path where natives are copied from. Leave empty to use default.", "#BootstrapperState_CustomNativesPathDesc")]
+    [ConfigCategory("Bootstrapper", "#BootstrapperState_Category_Bootstrapper")]
+    [ConfigAdvanced]
+    public string CustomNativesPath { get; set; } = string.Empty;
 
     [ConfigNeverVisible]
     public Dictionary<string, long> InstalledFiles { get; set; } = new();

@@ -29,19 +29,19 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Build Release OpenSteamClient (Linux)
-      working-directory: ./OpenSteamClient
-      run: dotnet publish --self-contained --use-current-runtime -c Release
+      working-directory: ./MainExe
+      run: dotnet publish --use-current-runtime -c Release
 
     - name: Create OpenSteamClient zip (Linux)
-      working-directory: ./artifacts/publish/OpenSteamClient/release/
+      working-directory: ./artifacts/publish/MainExe/release_linux-x64/
       run: sh -c 'zip -r "${GITHUB_WORKSPACE}/OpenSteamClient_Linux.zip" .'
 
     - name: Build Release OpenSteamClient (Windows)
-      working-directory: ./OpenSteamClient
-      run: dotnet publish --self-contained --runtime win-x64 -c Release
+      working-directory: ./MainExe
+      run: dotnet publish --runtime win-x64 -c Release
 
     - name: Create OpenSteamClient zip (Windows)
-      working-directory: ./artifacts/publish/OpenSteamClient/release_win-x64/
+      working-directory: ./artifacts/publish/MainExe/release_win-x64/
       run: sh -c 'zip -r "${GITHUB_WORKSPACE}/OpenSteamClient_Windows.zip" .'
 
     - name: Add OpenSteamClient Linux artifact

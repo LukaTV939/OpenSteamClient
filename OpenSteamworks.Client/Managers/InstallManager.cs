@@ -49,6 +49,7 @@ public class InstallManager
     /// <summary>
     /// The directory of OpenSteamClient's consumer's executable (ClientUI in the case of OpenSteamClient). In debug builds, this is the output folder.
     /// In release builds, this can be anywhere, but usually should be the same directory as <see href="InstallDir"/>.
+    /// On Linux, will probably be a readonly directory.
     /// </summary>
     public string AssemblyDirectory { get; private set; }
 

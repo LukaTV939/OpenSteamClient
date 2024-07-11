@@ -266,7 +266,10 @@ public class SteamClient : ISteamClient
         if (success) {
             msg = new CallbackMsg_t() { steamUser = nmsg.m_hSteamUser, callbackID = nmsg.m_iCallback };
             byte[] arr = new byte[nmsg.m_cubParam];
-            Marshal.Copy((IntPtr)nmsg.m_pubParam, arr, 0, nmsg.m_cubParam);
+            if (nmsg.m_cubParam > 0 && nmsg.m_pubParam != null) {
+                Marshal.Copy((IntPtr)nmsg.m_pubParam, arr, 0, nmsg.m_cubParam);
+            }
+            
             msg.callbackData = arr;
         } else {
             msg = CallbackMsg_t.Empty;

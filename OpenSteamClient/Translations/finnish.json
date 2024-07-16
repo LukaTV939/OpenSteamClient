@@ -69,6 +69,8 @@
         "#Library": "Kirjasto",
         "#Tab_Downloads": "Lataukset",
         "#Tab_Console": "Pääte",
+        "#Tab_Store": "Kauppa",
+        "#Tab_Community": "Yhteisö",
         "#FriendsUI_ShowList": "Näytä kaverilista",
         "#FriendsUI_PersonaState_Online": "Paikalla",
         "#FriendsUI_PersonaState_Away": "Poissa",

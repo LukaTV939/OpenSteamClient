@@ -205,16 +205,15 @@ public class CallbackManager
                     throw new Exception("GetAPICallResult returned false with our handle after receiving SteamAPICallCompleted_t. Bugged?");
                 }
 
-                ESteamAPICallFailure failureReason = this.client.IClientUtils.GetAPICallFailureReason(handle);
-                if (failed || data == null || failureReason != ESteamAPICallFailure.None)
+                if (failed || data == null)
                 {
                     failed = true;
-                    tcs.TrySetResult(new CallResult<T>(failed, failureReason, default));
+                    tcs.TrySetResult(new CallResult<T>(true, this.client.IClientUtils.GetAPICallFailureReason(handle), default));
                 }
                 else
                 {
                     T val = Marshal.PtrToStructure<T>((IntPtr)data);
-                    tcs.TrySetResult(new CallResult<T>(failed, failureReason, val));
+                    tcs.TrySetResult(new CallResult<T>(false, ESteamAPICallFailure.None, val));
                 }
 
                 this.DeregisterHandler(handler);

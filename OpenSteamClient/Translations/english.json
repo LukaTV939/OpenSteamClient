@@ -69,6 +69,8 @@
         "#Library": "Library",
         "#Tab_Downloads": "Downloads",
         "#Tab_Console": "Console",
+        "#Tab_Store": "Store",
+        "#Tab_Community": "Community",
         "#FriendsUI_ShowList": "Show Friends list",
         "#FriendsUI_PersonaState_Online": "Online",
         "#FriendsUI_PersonaState_Away": "Away",

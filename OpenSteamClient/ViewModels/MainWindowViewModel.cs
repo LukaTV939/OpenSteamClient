@@ -77,12 +77,12 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
         this.client.CallbackManager.RegisterHandler(1210004, OnCGameNetworkingUI_AppSummary);
         this.client.CallbackManager.RegisterHandler(1210001, OnClientNetworking_ConnectionStateChanged);
 
-        //TODO: need some other way to make the store and community pages work. (steamhtml is not very good for that purpose)
-        //PageList.Add(new(this, "Store", typeof(StorePage), typeof(ViewModelBase)));
+        //TODO: Ideally we'd embed CEF ourselves (steamwebhelper does not seem very good for that purpose)
+        PageList.Add(new(this, "Store", "#Tab_Store", typeof(StorePage), typeof(ViewModelBase)));
         PageList.Add(new(this, "Library", "#Library", typeof(LibraryPage), typeof(LibraryPageViewModel)));
         //TODO: this isn't final, we might move downloads to the bottom still
         PageList.Add(new(this, "Downloads", "#Tab_Downloads", typeof(DownloadsPage), typeof(DownloadsPageViewModel)));
-        //PageList.Add(new(this, "Community", typeof(CommunityPage), typeof(ViewModelBase)));
+        PageList.Add(new(this, "Community", "#Tab_Community", typeof(CommunityPage), typeof(ViewModelBase)));
         PageList.Add(new(this, "Console", "#Tab_Console", typeof(ConsolePage), typeof(ConsolePageViewModel)));
 
         SwitchToPage(typeof(LibraryPage));

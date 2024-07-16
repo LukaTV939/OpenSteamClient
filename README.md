@@ -14,8 +14,8 @@ Stuff marked rebranch-blocker is required to be solved before replacing the main
 - [ ] Backend stuff:
   - [x] (optional) JITEngine classgen with fields
   - [x] Callback system
-    - [ ] Make more performant
-      - Chokes pretty badly right now with the HTML rendering
+    - [ ] Make more performant and de-spaghettify
+      - Chokes a bit right now with the HTML rendering
   - [ ] Misc code cleanups
   - [ ] Fix TODO:s and BLOCKER:s
   - [x] Callresult system for non-callback results (needed for steamwebhelper/chromehtml/storepages)
@@ -88,12 +88,13 @@ Stuff marked rebranch-blocker is required to be solved before replacing the main
     - [ ] Cancel items
     - [ ] Stylize and explain the UI
     - [ ] Support showing 3rd party launcher's download statuses (future)
-- [ ] Steamwebhelper support (later)
+- [x] Steamwebhelper support (later)
   - Seems to break with every other update. We need another way to display store pages.
-  - [ ] Store, community, profile pages
-  - [ ] Fix blurriness on non-100% DPIs (later) (avalonia bug with x11 scaling)
-  - [ ] Make reliable??? (later)
-    - For some reason, sometimes the init fails for a reason or another. In that case, the web elements can't be used until the user restarts OSC completely. And the client will throw a timeout erorr.
+  - [x] Store, community
+  - [ ] Profile tab
+  - [ ] Fix blurriness on Linux with non-100% DPIs (later) (avalonia bug with x11 scaling, temp fix is to set scaling to 100%)
+  - [x] Make reliable???
+    - Seems to have been fixed.
   - [ ] ~~Non-janky typing implementation~~ (probably never, unless we make our own CEF wrapper and use it instead of SteamWebHelper)
 - [x] Windows support
   - [ ] Installer

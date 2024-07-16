@@ -13,6 +13,11 @@ public class GlobalSettings: IConfigFile {
     [ConfigCategory("Webhelper", "#GlobalSettings_Category_Webhelper")]
     public bool EnableWebHelper { get; set; } = true;
 
+    [ConfigName("Webhelper Always on", "#GlobalSettings_AlwaysWebhelper")]
+    [ConfigDescription("Enables/disables Webhelper launching at client startup, and always running in the background.", "#GlobalSettings_AlwaysWebhelperDesc")]
+    [ConfigCategory("Webhelper", "#GlobalSettings_Category_Webhelper")]
+    public bool WebhelperAlwaysOn { get; set; } = true;
+
     [ConfigName("Enable Webhelper GPU Acceleration", "#GlobalSettings_WebhelperGPUAcceleration")]
     [ConfigDescription("Enables/disables GPU hardware rendering in Webhelper.", "#GlobalSettings_WebhelperGPUAccelerationDesc")]
     [ConfigCategory("Webhelper", "#GlobalSettings_Category_Webhelper")]

@@ -1,5 +1,6 @@
 // HAS_RENDERIMMEDIATE (for custom avalonia builds (on by default))
 //#define HAS_RENDERIMMEDIATE
+//#define LOTS_OF_SPEW
 
 using System;
 using Avalonia.Reactive;
@@ -102,14 +103,12 @@ public partial class HTMLSurface : UserControl
 {
     private class HTMLBufferImg : ICustomDrawOperation
     {
-        private int width;
-        private int height;
-        private bool disposedValue;
-        public readonly object targetBitmapLock = new();
+        public const int BPP = 4;
+
         public SKBitmap targetBitmap;
-        private nint lastPtr = 0;
         internal bool isCurrentlyRenderable = false;
         private static readonly SKPaint simplePaint;
+        private SKImageInfo imageInfo;
 
         static HTMLBufferImg()
         {
@@ -126,34 +125,30 @@ public partial class HTMLSurface : UserControl
 
         public HTMLBufferImg(SKColorType format, SKAlphaType alphaFormat, int width, int height)
         {
-            this.width = width;
-            this.height = height;
-            Console.WriteLine("allocating initial bitmap of size " + width + "x" + height);
-            this.targetBitmap = AllocBitmap(new(width, height, format, alphaFormat));
-
+            SpewyLog("allocating initial bitmap of size " + width + "x" + height);
+            imageInfo = new(width, height, format, alphaFormat);
+            this.targetBitmap = AllocBitmap();
         }
 
-        private SKBitmap AllocBitmap(SKImageInfo info)
+        private SKBitmap AllocBitmap()
         {
-            if (info.Width == 0 || info.Height == 0)
+            if (imageInfo.Width == 0 || imageInfo.Height == 0)
             {
                 throw new InvalidOperationException("Cannot allocate a bitmap of size 0");
             }
 
-            return new(info, SKBitmapAllocFlags.ZeroPixels);
+            return new(imageInfo);
         }
 
-        public Rect Bounds => new(0, 0, width, height);
+        public Rect Bounds => new(0, 0, imageInfo.Width, imageInfo.Height);
 
         public bool Equals(ICustomDrawOperation? other)
         {
-            return other != null && other.GetType() == typeof(HTMLBufferImg) && ((HTMLBufferImg)other).lastPtr == this.lastPtr;
+            return other != null && other.GetType() == typeof(HTMLBufferImg) && this.targetBitmap.Equals((other as HTMLBufferImg)!.targetBitmap);
         }
 
         public bool HitTest(Point p)
-        {
-            return Bounds.Intersects(new Rect(p.X, p.Y, 1, 1));
-        }
+            => Bounds.Contains(p);
 
         public void Render(ImmediateDrawingContext context)
         {
@@ -170,9 +165,10 @@ public partial class HTMLSurface : UserControl
 
             using (var lease = leasef.Lease())
             {
-                lease.SkCanvas.DrawBitmap(targetBitmap, 0f, 0f, simplePaint);
+                lease.SkCanvas.DrawBitmap(targetBitmap, 0f, 0f);
             }
         }
+        
 
         private void ResizeInternal(int newWidth, int newHeight)
         {
@@ -183,15 +179,17 @@ public partial class HTMLSurface : UserControl
                     // Disallow resizing to 0x0
                     if (newWidth == 0 || newHeight == 0)
                     {
-                        Console.WriteLine("Trying to resize to 0! Resize ignored");
+                        SpewyLog("Trying to resize to 0! Resize ignored");
                         return;
                     }
 
-                    this.width = newWidth;
-                    this.height = newHeight;
-                    var newInfo = new SKImageInfo(this.width, this.height, targetBitmap.Info.ColorType, targetBitmap.Info.AlphaType);
-                    targetBitmap.Dispose();
-                    targetBitmap = AllocBitmap(newInfo);
+                    this.imageInfo.Width = newWidth;
+                    this.imageInfo.Height = newHeight;
+
+                    var oldBitmap = targetBitmap;
+                    targetBitmap = AllocBitmap();
+                    oldBitmap.Dispose();
+
                     // if (currentPtr != 0) {
                     //     NativeMemory.Free((void*)currentPtr);
                     // }
@@ -202,72 +200,74 @@ public partial class HTMLSurface : UserControl
             }
         }
 
-        Stopwatch lockTime = new();
         Stopwatch resizeTime = new();
-        Stopwatch memcpyTime = new();
         Stopwatch installPixelsTime = new();
-
-        public void UpdateData(int newWidth, int newHeight, IntPtr dataPtr)
+        
+        public void UpdateData(HTML_NeedsPaint_t updateEvent)
         {
-            Console.WriteLine("UpdateData called " + newWidth + "x" + newHeight + " : " + dataPtr);
-            lockTime.Reset();
+            SpewyLog("UpdateData called " + updateEvent.unWide + "x" + updateEvent.unTall + " : " + updateEvent.pBGRA);
             resizeTime.Reset();
-            memcpyTime.Reset();
             installPixelsTime.Reset();
 
-            if (newWidth == 0 || newWidth == 1 || newHeight == 0 || newHeight == 1)
+            if (updateEvent.unWide == 0 || updateEvent.unWide == 1 || updateEvent.unTall == 0 || updateEvent.unTall == 1)
             {
-                Console.WriteLine("Ignoring UpdateData where newWidth or newHeight was invalid");
+                SpewyLog("Ignoring UpdateData where new width or height was invalid");
                 return;
             }
 
-            if (dataPtr == 0)
+            if (updateEvent.pBGRA == 0)
             {
-                Console.WriteLine("Ignoring UpdateData where dataPtr is null");
+                SpewyLog("Ignoring UpdateData where dataPtr is null");
                 return;
             }
 
-            lockTime.Start();
-            lock (targetBitmapLock)
+            if (imageInfo.Width != updateEvent.unWide || imageInfo.Height != updateEvent.unTall)
             {
-                lockTime.Stop();
-
-                if (this.targetBitmap.Width != newWidth || this.targetBitmap.Height != newHeight)
-                {
-                    resizeTime.Start();
-                    ResizeInternal(newWidth, newHeight);
-                    resizeTime.Stop();
-                }
-
-                //NOTE: installpixels does not copy. It simply sets an internal pointer to the one specified here. This is bad in our use case, where the pointer is only valid during this function call. (Which means we need to memcpy or lock, which is also bad)
-                targetBitmap.InstallPixels(targetBitmap.Info, dataPtr);
-                installPixelsTime.Stop();
-
-                lastPtr = dataPtr;
-                installPixelsTime.Stop();
-                isCurrentlyRenderable = true;
-                Console.WriteLine("UpdateData took " + lockTime.Elapsed.TotalMilliseconds + "ms + " + resizeTime.Elapsed.TotalMilliseconds + "ms + " + memcpyTime.Elapsed.TotalMilliseconds + "ms + " + installPixelsTime.Elapsed.TotalMilliseconds + "ms");
+                resizeTime.Start();
+                SpewyLog("need resize");
+                ResizeInternal((int)updateEvent.unWide, (int)updateEvent.unTall);
+                resizeTime.Stop();
             }
+
+            SpewyLog("copy pixels");
+            installPixelsTime.Start();
+            CopyPixels(updateEvent);
+            installPixelsTime.Stop();
+            isCurrentlyRenderable = true;
+            SpewyLog("UpdateData took " + resizeTime.Elapsed.TotalMilliseconds + "ms + " + installPixelsTime.Elapsed.TotalMilliseconds + "ms");
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    this.targetBitmap.Dispose();
-                }
-
-                disposedValue = true;
+        private unsafe void CopyPixels(HTML_NeedsPaint_t updateEvent) {
+            //var updateRect = SKRect.Create(updateEvent.unUpdateX, updateEvent.unUpdateY, updateEvent.unWide, updateEvent.unTall);
+            nint ptr = targetBitmap.GetAddress(0, 0);
+            if (ptr == 0) {
+                return;
             }
+
+            var numBytesToCopy = updateEvent.unTall * updateEvent.unWide * BPP;
+            NativeMemory.Copy((void*)updateEvent.pBGRA, (void*)ptr, numBytesToCopy);
+
+            //TODO: This code bugs, why?
+            // var numBytesToCopy = updateEvent.unUpdateTall * updateEvent.unUpdateWide * BPP;
+
+            // // At what target pixel and ptr should we copy the source to
+            // var pixelStartTarget = updateEvent.unUpdateX + (updateEvent.unUpdateY * imageInfo.Width);
+            // nint startPtrTarget = (nint)(ptr + (pixelStartTarget * BPP));
+
+            // // At what source pixel and ptr should we start copying this change
+            // var pixelStartSource = updateEvent.unUpdateX + (updateEvent.unUpdateY * updateEvent.unWide);
+            // nint startPtrSource = (nint)(updateEvent.pBGRA + (pixelStartSource * BPP));
+
+            // NativeMemory.Copy((void*)startPtrSource, (void*)startPtrTarget, numBytesToCopy);
         }
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            // No-op. This will leak memory, but too bad since Avalonia tries to dispose it AND reuse it at the same time. Don't really know why, but it's just how it's done.
+        }
+
+        public void ActuallyDispose() {
+            targetBitmap.Dispose();
         }
     }
 
@@ -359,21 +359,13 @@ public partial class HTMLSurface : UserControl
     {
         if (this.BrowserHandle != 0)
         {
-            Console.WriteLine($"Bounds changed! ({(uint)newBounds.Width}x{(uint)newBounds.Height})");
-            if (!this.htmlImgBuffer.isCurrentlyRenderable)
-            {
-                this.surface.SetSize(this.BrowserHandle, (uint)newBounds.Width, (uint)newBounds.Height);
-            }
-            else
-            {
-                Console.WriteLine("Currently rendering, not resizing!");
-            }
+            SpewyLog($"Bounds changed! ({(uint)newBounds.Width}x{(uint)newBounds.Height})");
+            this.surface.SetSize(this.BrowserHandle, (uint)newBounds.Width, (uint)newBounds.Height);
         }
     }
 
     Stopwatch paintUpdateDataTime = new();
     Stopwatch forceRedrawTime = new();
-    //TODO: performance could be improved by using unUpdateXXXX properties to only update the part of the canvas that needs updating
     private void OnHTML_NeedsPaint(CallbackHandler<HTML_NeedsPaint_t> handler, HTML_NeedsPaint_t paintEvent)
     {
         if (paintEvent.unBrowserHandle == this.BrowserHandle)
@@ -381,17 +373,27 @@ public partial class HTMLSurface : UserControl
             forceRedrawTime.Reset();
             paintUpdateDataTime.Reset();
             paintUpdateDataTime.Start();
-            htmlImgBuffer.UpdateData((int)paintEvent.unWide, (int)paintEvent.unTall, paintEvent.pBGRA);
-            Console.WriteLine("Page scale: " + paintEvent.flPageScale);
-            Console.WriteLine("Avalonia scale: " + TopLevel.GetTopLevel(this)?.RenderScaling);
+            htmlImgBuffer.UpdateData(paintEvent);
+            SpewyLog("Page scale: " + paintEvent.flPageScale);
+            SpewyLog("Avalonia scale: " + TopLevel.GetTopLevel(this)?.RenderScaling);
             paintUpdateDataTime.Stop();
             forceRedrawTime.Start();
             this.ForceRedrawNonUICode();
             forceRedrawTime.Stop();
-            Console.WriteLine("Paint took " + forceRedrawTime.Elapsed.TotalMilliseconds + "ms + " + paintUpdateDataTime.Elapsed.TotalMilliseconds + "ms ");
+            SpewyLog("Paint took " + forceRedrawTime.Elapsed.TotalMilliseconds + "ms + " + paintUpdateDataTime.Elapsed.TotalMilliseconds + "ms ");
             htmlImgBuffer.isCurrentlyRenderable = false;
         }
     }
+
+    #if LOTS_OF_SPEW
+    private static void SpewyLog(object? str) {
+        Console.WriteLine(str);
+    }
+    #else
+    private static void SpewyLog(object? str) {
+        
+    }
+    #endif
 
     private void OnHTML_ShowToolTip_t(CallbackHandler<HTML_ShowToolTip_t> handler, HTML_ShowToolTip_t ev)
     {
@@ -497,7 +499,7 @@ public partial class HTMLSurface : UserControl
             throw new InvalidOperationException("CreateBrowser failed due to no call handle being returned.");
         }
 
-        Console.WriteLine("Got callhandle " + callHandle);
+        SpewyLog("Got callhandle " + callHandle);
         var result = await callHandle.Wait(new CancellationTokenSource(15000).Token);
         if (result.failed)
         {
@@ -507,7 +509,7 @@ public partial class HTMLSurface : UserControl
 
         this.BrowserHandle = result.data.unBrowserHandle;
 
-        Console.WriteLine("Created new browser with handle " + this.BrowserHandle);
+        SpewyLog("Created new browser with handle " + this.BrowserHandle);
         this.surface.AllowStartRequest(this.BrowserHandle, true);
         this.surface.SetSize(this.BrowserHandle, (uint)this.Bounds.Width, (uint)this.Bounds.Height);
 
@@ -526,6 +528,8 @@ public partial class HTMLSurface : UserControl
 
         // Shutdown the interface if no other surfaces are left
         this.htmlHost.Stop();
+
+        this.htmlImgBuffer.ActuallyDispose();
     }
 
     public void LoadURL(string url)
@@ -661,7 +665,7 @@ public partial class HTMLSurface : UserControl
         e.Handled = true;
 
         base.OnKeyDown(e);
-        Console.WriteLine("OnKeyDown a:'" + e.Key + "' s:'" + e.KeySymbol + "' n:'" + GetNativeKeyCodeForKeyEvent(e) + "'");
+        SpewyLog("OnKeyDown a:'" + e.Key + "' s:'" + e.KeySymbol + "' n:'" + GetNativeKeyCodeForKeyEvent(e) + "'");
         if (this.BrowserHandle != 0)
         {
             // If the key has an avalonia-provided symbol AND the keypress doesn't have any modifiers it's eligible for being typed
@@ -673,12 +677,12 @@ public partial class HTMLSurface : UserControl
                 // If the character didn't consist entirely of control characters, type it
                 if (controlCharsRemoved != string.Empty)
                 {
-                    Console.WriteLine("is char");
+                    SpewyLog("is char");
                     this.surface.KeyChar(this.BrowserHandle, BitConverter.ToInt32(utfEncoder.GetBytes(e.KeySymbol)), KeyModifiersToEHTMLKeyModifiers(e.KeyModifiers));
                 }
             }
 
-            Console.WriteLine("is actual key");
+            SpewyLog("is actual key");
             this.surface.KeyDown(this.BrowserHandle, GetNativeKeyCodeForKeyEvent(e), KeyModifiersToEHTMLKeyModifiers(e.KeyModifiers), false);
         }
     }
@@ -687,7 +691,7 @@ public partial class HTMLSurface : UserControl
     {
         base.OnKeyUp(e);
 
-        Console.WriteLine("OnKeyUp a:'" + e.Key + "' s:'" + e.KeySymbol + "' n:'" + GetNativeKeyCodeForKeyEvent(e) + "'");
+        SpewyLog("OnKeyUp a:'" + e.Key + "' s:'" + e.KeySymbol + "' n:'" + GetNativeKeyCodeForKeyEvent(e) + "'");
         if (this.BrowserHandle != 0)
         {
             this.surface.KeyUp(this.BrowserHandle, GetNativeKeyCodeForKeyEvent(e), KeyModifiersToEHTMLKeyModifiers(e.KeyModifiers));

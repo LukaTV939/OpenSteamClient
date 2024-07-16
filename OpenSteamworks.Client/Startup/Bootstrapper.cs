@@ -248,14 +248,14 @@ public class Bootstrapper {
             IEnumerable<Process> processes;
             while (true)
             {
-                processes = Process.GetProcessesByName("steamserviced").Concat(Process.GetProcessesByName("htmlhost"));
+                processes = Process.GetProcessesByName("steamserviced");
                 
                 if (!processes.Any()) {
                     break;
                 }
 
                 System.Threading.Thread.Sleep(1000);
-                Logger.GeneralLogger.Trace("Waiting for steamserviced/htmlhost to terminate");
+                Logger.GeneralLogger.Trace("Waiting for steamserviced to terminate");
             }
         }
 
@@ -972,7 +972,6 @@ public class Bootstrapper {
             new("steam-launch-wrapper", "linux64/steam-launch-wrapper"),
             new("steamserviced.exe", "bin/steamserviced.exe"),
             new("steamserviced.pdb", "bin/steamserviced.pdb"),
-            new("htmlhost", "ubuntu12_32/htmlhost"),
             new("steamservice.so", "linux64/steamservice.so"),
             new("steamservice.so", "steamservice.so"),
             new("libaudio.so", "libaudio.so"),
@@ -980,7 +979,6 @@ public class Bootstrapper {
             new("libprotobufhack.so", "libprotobufhack.so"),
             new("libbootstrappershim32.so", "libbootstrappershim32.so"),
             new("libbootstrappershim64.so", "libbootstrappershim64.so"),
-            new("libhtmlhost_fakepid.so", "libhtmlhost_fakepid.so"),
         };
 
         var assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);

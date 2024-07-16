@@ -99,7 +99,6 @@ public class SteamService : IClientLifetime {
                         await Task.Run(() =>
                         {
                             File.Copy(Path.Combine(installManager.InstallDir, "libbootstrappershim32.so"), "/tmp/libbootstrappershim32.so", true);
-                            File.Copy(Path.Combine(installManager.InstallDir, "libhtmlhost_fakepid.so"), "/tmp/libhtmlhost_fakepid.so", true);
                         });
                     }
                     catch (Exception e)

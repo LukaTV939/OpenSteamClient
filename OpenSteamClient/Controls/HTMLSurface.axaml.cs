@@ -95,7 +95,7 @@ public static class AvaloniaCursors
 }
 
 /// <summary>
-/// An HTMLSurface for showing a webpage via IClientHTMLSurface. Needs htmlhost.
+/// An HTMLSurface for showing a webpage via IClientHTMLSurface.
 /// Cannot be instantiated from axaml, must be created in codebehind.
 /// Only handles paints, input events and cursor changes, register other handlers yourself
 /// </summary>

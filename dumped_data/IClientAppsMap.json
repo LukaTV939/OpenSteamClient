@@ -5,8 +5,8 @@
             "name": "GetAppData",
             "argc": "5",
             "interfaceid": "8",
-            "functionid": "2278710667",
-            "fencepost": "2313969677",
+            "functionid": "2278710652",
+            "fencepost": "2313663211",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -22,8 +22,8 @@
             "name": "SetLocalAppConfig",
             "argc": "4",
             "interfaceid": "8",
-            "functionid": "1219105801",
-            "fencepost": "1254477714",
+            "functionid": "1219106046",
+            "fencepost": "1254171508",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -38,8 +38,8 @@
             "name": "GetInternalAppIDFromGameID",
             "argc": "2",
             "interfaceid": "8",
-            "functionid": "3178166009",
-            "fencepost": "3214150824",
+            "functionid": "3178165994",
+            "fencepost": "3213844358",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes8"
@@ -52,8 +52,8 @@
             "name": "GetAllOwnedMultiplayerApps",
             "argc": "3",
             "interfaceid": "8",
-            "functionid": "2949451256",
-            "fencepost": "2985371555",
+            "functionid": "2949451221",
+            "fencepost": "2985065069",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4"
@@ -67,8 +67,8 @@
             "name": "GetAvailableLaunchOptions",
             "argc": "4",
             "interfaceid": "8",
-            "functionid": "4215770131",
-            "fencepost": "4251238818",
+            "functionid": "4215770112",
+            "fencepost": "4250932348",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -83,8 +83,8 @@
             "name": "GetAppDataSection",
             "argc": "6",
             "interfaceid": "8",
-            "functionid": "1406045926",
-            "fencepost": "1441659774",
+            "functionid": "1406045947",
+            "fencepost": "1441353344",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -101,8 +101,8 @@
             "name": "GetMultipleAppDataSections",
             "argc": "8",
             "interfaceid": "8",
-            "functionid": "4247916880",
-            "fencepost": "4283708147",
+            "functionid": "4247916899",
+            "fencepost": "4283401715",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -121,8 +121,8 @@
             "name": "RequestAppInfoUpdate",
             "argc": "3",
             "interfaceid": "8",
-            "functionid": "2905656707",
-            "fencepost": "2941706038",
+            "functionid": "2905656734",
+            "fencepost": "2941399614",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -136,8 +136,8 @@
             "name": "GetDLCCount",
             "argc": "2",
             "interfaceid": "8",
-            "functionid": "1862251422",
-            "fencepost": "1898333011",
+            "functionid": "1862251401",
+            "fencepost": "1898026539",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4"
@@ -150,8 +150,8 @@
             "name": "BGetDLCDataByIndex",
             "argc": "7",
             "interfaceid": "8",
-            "functionid": "2793970929",
-            "fencepost": "2830149292",
+            "functionid": "2793970916",
+            "fencepost": "2829842828",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -169,8 +169,8 @@
             "name": "GetAppType",
             "argc": "2",
             "interfaceid": "8",
-            "functionid": "3688353611",
-            "fencepost": "3724612619",
+            "functionid": "3688353590",
+            "fencepost": "3724306147",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4"
@@ -183,8 +183,8 @@
             "name": "TakeUpdateLock",
             "argc": "1",
             "interfaceid": "8",
-            "functionid": "925337873",
-            "fencepost": "961613010",
+            "functionid": "925337966",
+            "fencepost": "961306652",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
             ],
@@ -193,11 +193,11 @@
             ]
         },
         {
-            "name": "GetAppKVRaw",
+            "name": "GetAllAppsKVRaw",
             "argc": "4",
             "interfaceid": "8",
-            "functionid": "3485268400",
-            "fencepost": "3521624182",
+            "functionid": "784646571",
+            "fencepost": "820695902",
             "cannotcallincrossprocess": "1",
             "serializedargs": [
                 "bytes4",
@@ -212,8 +212,8 @@
             "name": "ReleaseUpdateLock",
             "argc": "1",
             "interfaceid": "8",
-            "functionid": "135024974",
-            "fencepost": "171413014",
+            "functionid": "135024931",
+            "fencepost": "171106520",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
             ],
@@ -224,8 +224,8 @@
             "name": "GetLastChangeNumberReceived",
             "argc": "1",
             "interfaceid": "8",
-            "functionid": "3817211193",
-            "fencepost": "3853615362",
+            "functionid": "3817211222",
+            "fencepost": "3853308940",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
             ],

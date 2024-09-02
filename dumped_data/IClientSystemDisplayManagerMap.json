@@ -5,8 +5,8 @@
             "name": "IsInterfaceValid",
             "argc": "1",
             "interfaceid": "60",
-            "functionid": "862245979",
-            "fencepost": "907947056",
+            "functionid": "862245967",
+            "fencepost": "907753496",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
             ],
@@ -18,8 +18,8 @@
             "name": "GetState",
             "argc": "2",
             "interfaceid": "60",
-            "functionid": "2169953910",
-            "fencepost": "2215719503",
+            "functionid": "2169953890",
+            "fencepost": "2215525935",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
             ],
@@ -32,8 +32,8 @@
             "name": "SetMode",
             "argc": "2",
             "interfaceid": "60",
-            "functionid": "2139887746",
-            "fencepost": "2185750113",
+            "functionid": "2139887766",
+            "fencepost": "2185556585",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "protobuf"
@@ -46,8 +46,8 @@
             "name": "ClearModeOverride",
             "argc": "2",
             "interfaceid": "60",
-            "functionid": "3934404348",
-            "fencepost": "3980315102",
+            "functionid": "3934404336",
+            "fencepost": "3980121542",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4"
@@ -60,14 +60,27 @@
             "name": "SetCompatibilityMode",
             "argc": "2",
             "interfaceid": "60",
-            "functionid": "206061322",
-            "fencepost": "251988205",
+            "functionid": "206061318",
+            "fencepost": "251794653",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4"
             ],
             "serializedreturns": [
                 "bytes4"
+            ]
+        },
+        {
+            "name": "SetGameResolutionGlobal",
+            "argc": "2",
+            "interfaceid": "60",
+            "functionid": "4025867423",
+            "fencepost": "4071616887",
+            "cannotcallincrossprocess": "0",
+            "serializedargs": [
+                "string"
+            ],
+            "serializedreturns": [
             ]
         }
     ]

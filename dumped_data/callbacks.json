@@ -675,6 +675,11 @@
         "size": 8
     },
     {
+        "id": 1280036,
+        "name": "Unknown",
+        "size": 1
+    },
+    {
         "id": 1300001,
         "name": "StreamClientRaiseWindow_t",
         "size": 1

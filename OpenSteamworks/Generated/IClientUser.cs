@@ -430,88 +430,68 @@ public unsafe interface IClientUser
     public bool BIsOtherSessionPlaying(ref UInt32 accountID);  // argc: 1, index: 226, ipc args: [], ipc returns: [boolean, bytes4]
     public bool BKickOtherPlayingSession();  // argc: 0, index: 227, ipc args: [], ipc returns: [boolean]
     public bool BIsAccountLockedDown();  // argc: 0, index: 228, ipc args: [], ipc returns: [boolean]
+    public SteamAPICall_t RequestAccountLinkInfo();  // argc: 0, index: 229, ipc args: [], ipc returns: [bytes8]
+    public unknown_ret RequestSurveySchedule();  // argc: 0, index: 230, ipc args: [], ipc returns: []
+    public unknown_ret RequestNewSteamAnnouncementState();  // argc: 0, index: 231, ipc args: [], ipc returns: []
     // WARNING: Arguments are unknown!
-    public unknown_ret ClearAndSetAppTags();  // argc: 2, index: 229, ipc args: [bytes8, utlvector], ipc returns: []
+    public unknown_ret UpdateSteamAnnouncementLastRead();  // argc: 3, index: 232, ipc args: [bytes8, bytes4], ipc returns: []
+    public unknown_ret GetMarketEligibility();  // argc: 0, index: 233, ipc args: [], ipc returns: [bytes8]
     // WARNING: Arguments are unknown!
-    public unknown_ret RemoveAppTag();  // argc: 2, index: 230, ipc args: [bytes8, string], ipc returns: []
+    public unknown_ret UpdateGameVrDllState(CGameID gameid, bool unk, bool unk2);  // argc: 3, index: 234, ipc args: [bytes8, bytes1, bytes1], ipc returns: []
     // WARNING: Arguments are unknown!
-    public unknown_ret AddAppTag();  // argc: 2, index: 231, ipc args: [bytes8, string], ipc returns: []
+    public unknown_ret KillVRTheaterPancakeGame(CGameID gameid);  // argc: 1, index: 235, ipc args: [bytes8], ipc returns: []
     // WARNING: Arguments are unknown!
-    public unknown_ret ClearAppTags();  // argc: 1, index: 232, ipc args: [bytes8], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public unknown_ret SetAppHidden();  // argc: 2, index: 233, ipc args: [bytes8, bytes1], ipc returns: []
-    public SteamAPICall_t RequestAccountLinkInfo();  // argc: 0, index: 234, ipc args: [], ipc returns: [bytes8]
-    public unknown_ret RequestSurveySchedule();  // argc: 0, index: 235, ipc args: [], ipc returns: []
-    public unknown_ret RequestNewSteamAnnouncementState();  // argc: 0, index: 236, ipc args: [], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public unknown_ret UpdateSteamAnnouncementLastRead();  // argc: 3, index: 237, ipc args: [bytes8, bytes4], ipc returns: []
-    public unknown_ret GetMarketEligibility();  // argc: 0, index: 238, ipc args: [], ipc returns: [bytes8]
-    // WARNING: Arguments are unknown!
-    public unknown_ret UpdateGameVrDllState(CGameID gameid, bool unk, bool unk2);  // argc: 3, index: 239, ipc args: [bytes8, bytes1, bytes1], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public unknown_ret KillVRTheaterPancakeGame(CGameID gameid);  // argc: 1, index: 240, ipc args: [bytes8], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public unknown_ret SetVRIsHMDAwake();  // argc: 1, index: 241, ipc args: [bytes1], ipc returns: []
-    public bool BIsAnyGameOrServiceAppRunning();  // argc: 0, index: 242, ipc args: [], ipc returns: [boolean]
+    public unknown_ret SetVRIsHMDAwake();  // argc: 1, index: 236, ipc args: [bytes1], ipc returns: []
+    public bool BIsAnyGameOrServiceAppRunning();  // argc: 0, index: 237, ipc args: [], ipc returns: [boolean]
     [BlacklistedInCrossProcessIPC]
-    public bool BGetAppPlaytimeMap(CUtlMap<AppId_t, AppPlaytime_t>* vec);  // argc: 1, index: 243, ipc args: [bytes4], ipc returns: [boolean]
+    public bool BGetAppPlaytimeMap(CUtlMap<AppId_t, AppPlaytime_t>* vec);  // argc: 1, index: 238, ipc args: [bytes4], ipc returns: [boolean]
     [BlacklistedInCrossProcessIPC]
-    public bool BGetAppsLastPlayedMap(CUtlMap<AppId_t, RTime32>* vec);  // argc: 1, index: 244, ipc args: [bytes4], ipc returns: [boolean]
-    /// <summary>
-    /// App tags were the old version of the "categories" system in place now.
-    /// These are stored in sharedconfig.vdf in Software/Valve/Steam/Apps/*/tags
-    /// Don't use this if wanting to get categories.
-    /// The new category system is stored here:
-    /// https://store.steampowered.com/account/userconfigstore
-    /// To get it, you can roll your own cloud config manager or use OpenSteamworks.Client
-    /// </summary>
-    [BlacklistedInCrossProcessIPC]
-    public bool BGetAppTagsMap(CUtlMap<AppId_t, AppTags_t>* vec);  // argc: 1, index: 245, ipc args: [bytes4], ipc returns: [boolean]
+    public bool BGetAppsLastPlayedMap(CUtlMap<AppId_t, RTime32>* vec);  // argc: 1, index: 239, ipc args: [bytes4], ipc returns: [boolean]
     // WARNING: Arguments are unknown!
-    public unknown_ret SendSteamServiceStatusUpdate(EResult unk1, ESteamServiceStatusUpdate unk2);  // argc: 2, index: 246, ipc args: [bytes4, bytes4], ipc returns: []
+    public unknown_ret SendSteamServiceStatusUpdate(EResult unk1, ESteamServiceStatusUpdate unk2);  // argc: 2, index: 240, ipc args: [bytes4, bytes4], ipc returns: []
     // WARNING: Arguments are unknown!
-    public EResult RequestSteamGroupChatMessageNotifications();  // argc: 5, index: 247, ipc args: [bytes8, bytes8, bytes4], ipc returns: [bytes4]
+    public EResult RequestSteamGroupChatMessageNotifications();  // argc: 5, index: 241, ipc args: [bytes8, bytes8, bytes4], ipc returns: [bytes4]
     // WARNING: Arguments are unknown!
-    public unknown_ret RequestSteamGroupChatMessageHistory();  // argc: 5, index: 248, ipc args: [bytes8, bytes8, bytes4], ipc returns: [bytes4]
+    public unknown_ret RequestSteamGroupChatMessageHistory();  // argc: 5, index: 242, ipc args: [bytes8, bytes8, bytes4], ipc returns: [bytes4]
     // WARNING: Arguments are unknown!
-    public unknown_ret RequestSendSteamGroupChatMessage();  // argc: 6, index: 249, ipc args: [bytes8, bytes8, bytes4, string], ipc returns: [bytes4]
+    public unknown_ret RequestSendSteamGroupChatMessage();  // argc: 6, index: 243, ipc args: [bytes8, bytes8, bytes4, string], ipc returns: [bytes4]
     // WARNING: Arguments are unknown!
-    public unknown_ret OnNewGroupChatMsgAdded();  // argc: 8, index: 250, ipc args: [bytes8, bytes8, bytes4, bytes4, bytes4, string], ipc returns: []
+    public unknown_ret OnNewGroupChatMsgAdded();  // argc: 8, index: 244, ipc args: [bytes8, bytes8, bytes4, bytes4, bytes4, string], ipc returns: []
     // WARNING: Arguments are unknown!
-    public unknown_ret OnGroupChatUserStateChange();  // argc: 4, index: 251, ipc args: [bytes8, bytes4, bytes4], ipc returns: []
+    public unknown_ret OnGroupChatUserStateChange();  // argc: 4, index: 245, ipc args: [bytes8, bytes4, bytes4], ipc returns: []
     // WARNING: Arguments are unknown!
-    public unknown_ret OnReceivedGroupChatSubscriptionResponse();  // argc: 5, index: 252, ipc args: [bytes8, bytes8, bytes1], ipc returns: []
+    public unknown_ret OnReceivedGroupChatSubscriptionResponse();  // argc: 5, index: 246, ipc args: [bytes8, bytes8, bytes1], ipc returns: []
     // WARNING: Arguments are unknown!
-    public unknown_ret GetTimedTrialStatus();  // argc: 4, index: 253, ipc args: [bytes4], ipc returns: [bytes1, bytes1, bytes4, bytes4]
-    public SteamAPICall_t RequestTimedTrialStatus(AppId_t appid);  // argc: 1, index: 254, ipc args: [bytes4], ipc returns: [bytes1]
-    public unknown_ret PrepareForSystemSuspend();  // argc: 0, index: 255, ipc args: [], ipc returns: [bytes8]
+    public unknown_ret GetTimedTrialStatus();  // argc: 4, index: 247, ipc args: [bytes4], ipc returns: [bytes1, bytes1, bytes4, bytes4]
+    public SteamAPICall_t RequestTimedTrialStatus(AppId_t appid);  // argc: 1, index: 248, ipc args: [bytes4], ipc returns: [bytes1]
+    public unknown_ret PrepareForSystemSuspend();  // argc: 0, index: 249, ipc args: [], ipc returns: [bytes8]
     // WARNING: Arguments are unknown!
-    public unknown_ret ResumeSuspendedGames();  // argc: 1, index: 256, ipc args: [bytes1], ipc returns: [bytes8]
-    public UInt64 GetClientInstallationID();  // argc: 0, index: 257, ipc args: [], ipc returns: [bytes8]
+    public unknown_ret ResumeSuspendedGames();  // argc: 1, index: 250, ipc args: [bytes1], ipc returns: [bytes8]
+    public UInt64 GetClientInstallationID();  // argc: 0, index: 251, ipc args: [], ipc returns: [bytes8]
     // WARNING: Arguments are unknown!
-    public AppId_t GetAppIDForGameID(in CGameID gameid);  // argc: 1, index: 258, ipc args: [bytes8], ipc returns: [bytes4]
-    public bool BDoNotDisturb();  // argc: 0, index: 259, ipc args: [], ipc returns: [boolean]
+    public AppId_t GetAppIDForGameID(in CGameID gameid);  // argc: 1, index: 252, ipc args: [bytes8], ipc returns: [bytes4]
+    public bool BDoNotDisturb();  // argc: 0, index: 253, ipc args: [], ipc returns: [boolean]
     // WARNING: Arguments are unknown!
-    public void SetAdditionalClientArgData(string data);  // argc: 1, index: 260, ipc args: [bytes5], ipc returns: []
-    public ulong GetFamilyGroupID();  // argc: 0, index: 261, ipc args: [], ipc returns: [bytes8]
-    public string GetFamilyGroupName();  // argc: 0, index: 262, ipc args: [], ipc returns: [string]
-    public uint GetFamilyGroupRole();  // argc: 0, index: 263, ipc args: [], ipc returns: [bytes4]
-    public int GetFamilyGroupMembers(uint[] memberAccountIDs, int maxLen);  // argc: 2, index: 264, ipc args: [bytes4], ipc returns: [bytes4, bytes_length_from_reg]
+    public void SetAdditionalClientArgData(string data);  // argc: 1, index: 254, ipc args: [bytes5], ipc returns: []
+    public ulong GetFamilyGroupID();  // argc: 0, index: 255, ipc args: [], ipc returns: [bytes8]
+    public string GetFamilyGroupName();  // argc: 0, index: 256, ipc args: [], ipc returns: [string]
+    public uint GetFamilyGroupRole();  // argc: 0, index: 257, ipc args: [], ipc returns: [bytes4]
+    public int GetFamilyGroupMembers(uint[] memberAccountIDs, int maxLen);  // argc: 2, index: 258, ipc args: [bytes4], ipc returns: [bytes4, bytes_length_from_reg]
     // WARNING: Arguments are unknown!
-    public bool GetSharedAppLockInfo(AppId_t appid, out bool isLocked, out uint unk, out uint unk2, out uint unk3, out bool unk4);  // argc: 5, index: 265, ipc args: [bytes4], ipc returns: [bytes1, bytes4, bytes4, bytes4, bytes1]
+    public bool GetSharedAppLockInfo(AppId_t appid, out bool isLocked, out uint unk, out uint unk2, out uint unk3, out bool unk4);  // argc: 5, index: 259, ipc args: [bytes4], ipc returns: [bytes1, bytes4, bytes4, bytes4, bytes1]
     // WARNING: Arguments are unknown!
     [BlacklistedInCrossProcessIPC]
-    public bool GetFamilyDLCForApp(AppId_t appid, CUtlVector<uint>* dlcIDs);  // argc: 2, index: 266, ipc args: [bytes4, bytes4], ipc returns: [bytes1]
+    public bool GetFamilyDLCForApp(AppId_t appid, CUtlVector<uint>* dlcIDs);  // argc: 2, index: 260, ipc args: [bytes4, bytes4], ipc returns: [bytes1]
     // WARNING: Arguments are unknown!
-    public SteamAPICall_t SetPreferredLender(AppId_t appid, uint accountID);  // argc: 2, index: 267, ipc args: [bytes4, bytes4], ipc returns: [bytes8]
+    public SteamAPICall_t SetPreferredLender(AppId_t appid, uint accountID);  // argc: 2, index: 261, ipc args: [bytes4, bytes4], ipc returns: [bytes8]
     [BlacklistedInCrossProcessIPC]
-    public bool GetFamilyCopyCounts(CUtlMap<AppId_t, int>* counts);  // argc: 1, index: 268, ipc args: [bytes4], ipc returns: [bytes1]
+    public bool GetFamilyCopyCounts(CUtlMap<AppId_t, int>* counts);  // argc: 1, index: 262, ipc args: [bytes4], ipc returns: [bytes1]
     // WARNING: Arguments are unknown!
-    public void NotifyPendingGameLaunch_FetchSteamStreamingEncoderConfig(AppId_t appid);  // argc: 1, index: 269, ipc args: [bytes4], ipc returns: []
+    public void NotifyPendingGameLaunch_FetchSteamStreamingEncoderConfig(AppId_t appid);  // argc: 1, index: 263, ipc args: [bytes4], ipc returns: []
     // WARNING: Arguments are unknown!
-    public bool BShouldWaitForSteamStreamingEncoderConfig(AppId_t appid);  // argc: 1, index: 270, ipc args: [bytes4], ipc returns: [boolean]
+    public bool BShouldWaitForSteamStreamingEncoderConfig(AppId_t appid);  // argc: 1, index: 264, ipc args: [bytes4], ipc returns: [boolean]
     // WARNING: Arguments are unknown!
     [BlacklistedInCrossProcessIPC]
-    public bool BGetProcessIDsForGame(CGameID gameid, CUtlVector<uint>* gameIDs);  // argc: 3, index: 271, ipc args: [bytes8, bytes4, bytes4], ipc returns: [boolean]
-    public SteamAPICall_t CancelLicenseForApp(AppId_t appid);  // argc: 1, index: 272, ipc args: [bytes4], ipc returns: [bytes8]
+    public bool BGetProcessIDsForGame(CGameID gameid, CUtlVector<uint>* gameIDs);  // argc: 3, index: 265, ipc args: [bytes8, bytes4, bytes4], ipc returns: [boolean]
+    public SteamAPICall_t CancelLicenseForApp(AppId_t appid);  // argc: 1, index: 266, ipc args: [bytes4], ipc returns: [bytes8]
 }

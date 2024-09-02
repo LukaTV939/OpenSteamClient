@@ -31,7 +31,6 @@ using OpenSteamworks.Generated;
 using OpenSteamworks.Messaging;
 
 using OpenSteamworks.Protobuf;
-using OpenSteamworks.Protobuf.WebUI;
 using OpenSteamworks.Structs;
 using OpenSteamworks.Utils;
 using Profiler;

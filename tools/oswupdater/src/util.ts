@@ -17,7 +17,6 @@ export function rm(path: string): void {
 }
 
 
-//TODO: this doesn't wait for the process to finish executing, even though it should
 export function execWrap(command: string, options: SpawnOptionsWithoutStdio): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         var cmd = spawn(command, { ...options, shell: true });

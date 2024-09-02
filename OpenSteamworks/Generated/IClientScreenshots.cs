@@ -19,7 +19,7 @@ public unsafe interface IClientScreenshots
     // WARNING: Arguments are unknown!
     public unknown_ret SendScreenshotStartedNotification();  // argc: 1, index: 3, ipc args: [bytes8], ipc returns: []
     // WARNING: Arguments are unknown!
-    public unknown_ret WriteScreenshot();  // argc: 6, index: 4, ipc args: [bytes8, bytes4, bytes4, bytes4, bytes1, bytes_length_from_mem], ipc returns: [bytes4]
+    public unknown_ret WriteScreenshot();  // argc: 8, index: 4, ipc args: [bytes8, bytes4, bytes4, bytes4, bytes1, bytes8, bytes_length_from_mem], ipc returns: [bytes4]
     // WARNING: Arguments are unknown!
     public unknown_ret AddScreenshotToLibrary();  // argc: 7, index: 5, ipc args: [bytes8, bytes4, string, string, string, bytes4, bytes4], ipc returns: [bytes4]
     // WARNING: Arguments are unknown!
@@ -79,6 +79,10 @@ public unsafe interface IClientScreenshots
     public unknown_ret GetTaggedPublishedFile();  // argc: 3, index: 34, ipc args: [bytes8, bytes4, bytes4], ipc returns: [bytes8]
     // WARNING: Arguments are unknown!
     public unknown_ret GetScreenshotVRType();  // argc: 2, index: 35, ipc args: [bytes8, bytes4], ipc returns: [bytes4]
+    public unknown_ret SetScreenshotTimelineData();  // argc: 5, index: 36, ipc args: [bytes8, bytes4, string, bytes8], ipc returns: []
+    [BlacklistedInCrossProcessIPC]
+    public unknown_ret BQueryScreenshotsByTimeline();  // argc: 3, index: 37, ipc args: [bytes8, string, bytes4], ipc returns: [boolean]
     // WARNING: Arguments are unknown!
-    public unknown_ret BGetUserScreenshotDirectory();  // argc: 2, index: 36, ipc args: [bytes4], ipc returns: [boolean, bytes_length_from_mem]
+    [BlacklistedInCrossProcessIPC]
+    public unknown_ret BGetUserScreenshotDirectory();  // argc: 1, index: 38, ipc args: [bytes4], ipc returns: [boolean]
 }

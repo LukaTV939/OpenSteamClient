@@ -5,8 +5,8 @@
             "name": "SendMessage",
             "argc": "5",
             "interfaceid": "19",
-            "functionid": "3499677223",
-            "fencepost": "3561469835",
+            "functionid": "3499677246",
+            "fencepost": "3561356955",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",
@@ -22,8 +22,8 @@
             "name": "IsMessageAvailable",
             "argc": "3",
             "interfaceid": "19",
-            "functionid": "1188771618",
-            "fencepost": "1250644875",
+            "functionid": "1188771625",
+            "fencepost": "1250531979",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4"
@@ -37,8 +37,8 @@
             "name": "RetrieveMessage",
             "argc": "6",
             "interfaceid": "19",
-            "functionid": "1763933704",
-            "fencepost": "1825952122",
+            "functionid": "1763933711",
+            "fencepost": "1825839226",
             "cannotcallincrossprocess": "0",
             "serializedargs": [
                 "bytes4",

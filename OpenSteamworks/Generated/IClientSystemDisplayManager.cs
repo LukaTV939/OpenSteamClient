@@ -21,4 +21,5 @@ public unsafe interface IClientSystemDisplayManager
     public unknown_ret ClearModeOverride();  // argc: 1, index: 4, ipc args: [bytes4], ipc returns: [bytes4]
     // WARNING: Arguments are unknown!
     public unknown_ret SetCompatibilityMode();  // argc: 1, index: 5, ipc args: [bytes4], ipc returns: [bytes4]
+    public unknown_ret SetGameResolutionGlobal();  // argc: 1, index: 6, ipc args: [string], ipc returns: []
 }

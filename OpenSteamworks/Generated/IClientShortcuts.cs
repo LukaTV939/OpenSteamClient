@@ -49,28 +49,20 @@ public unsafe interface IClientShortcuts
     // WARNING: Arguments are unknown!
     public void SetShortcutCommandLine(AppId_t appid, string commandline);  // argc: 2, index: 16, ipc args: [bytes4, string], ipc returns: []
     // WARNING: Arguments are unknown!
-    public void ClearShortcutUserTags();  // argc: 1, index: 17, ipc args: [bytes4], ipc returns: []
+    public void SetShortcutHidden();  // argc: 2, index: 17, ipc args: [bytes4, bytes1], ipc returns: []
     // WARNING: Arguments are unknown!
-    public void AddShortcutUserTag();  // argc: 2, index: 18, ipc args: [bytes4, string], ipc returns: []
+    public void SetAllowDesktopConfig(AppId_t appid, bool allow);  // argc: 2, index: 18, ipc args: [bytes4, bytes1], ipc returns: []
     // WARNING: Arguments are unknown!
-    public void RemoveShortcutUserTag();  // argc: 2, index: 19, ipc args: [bytes4, string], ipc returns: []
+    public void SetAllowOverlay(AppId_t appid, bool allow);  // argc: 2, index: 19, ipc args: [bytes4, bytes1], ipc returns: []
     // WARNING: Arguments are unknown!
-    public void ClearAndSetShortcutUserTags();  // argc: 2, index: 20, ipc args: [bytes4, utlvector], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public void SetShortcutHidden();  // argc: 2, index: 21, ipc args: [bytes4, bytes1], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public void SetAllowDesktopConfig(AppId_t appid, bool allow);  // argc: 2, index: 22, ipc args: [bytes4, bytes1], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public void SetAllowOverlay(AppId_t appid, bool allow);  // argc: 2, index: 23, ipc args: [bytes4, bytes1], ipc returns: []
-    // WARNING: Arguments are unknown!
-    public void SetOpenVRShortcut(AppId_t appid, bool isVR);  // argc: 2, index: 24, ipc args: [bytes4, bytes1], ipc returns: []
+    public void SetOpenVRShortcut(AppId_t appid, bool isVR);  // argc: 2, index: 20, ipc args: [bytes4, bytes1], ipc returns: []
     // WARNING: Arguments are unknown!
     [BlacklistedInCrossProcessIPC]
-    public bool SetDevkitShortcut(AppId_t appid, string unk, uint unk2);  // argc: 3, index: 25, ipc args: [bytes4, string, bytes4], ipc returns: [bytes1]
-    public bool SetFlatpakAppID(AppId_t appid, string flatpakAppID);  // argc: 2, index: 26, ipc args: [bytes4, string], ipc returns: [bytes1]
+    public bool SetDevkitShortcut(AppId_t appid, string unk, uint unk2);  // argc: 3, index: 21, ipc args: [bytes4, string, bytes4], ipc returns: [bytes1]
+    public bool SetFlatpakAppID(AppId_t appid, string flatpakAppID);  // argc: 2, index: 22, ipc args: [bytes4, string], ipc returns: [bytes1]
     // WARNING: Arguments are unknown!
-    public void RemoveShortcut(AppId_t appid);  // argc: 1, index: 27, ipc args: [bytes4], ipc returns: []
-    public void RemoveAllTemporaryShortcuts();  // argc: 0, index: 28, ipc args: [], ipc returns: []
+    public void RemoveShortcut(AppId_t appid);  // argc: 1, index: 23, ipc args: [bytes4], ipc returns: []
+    public void RemoveAllTemporaryShortcuts();  // argc: 0, index: 24, ipc args: [], ipc returns: []
     // WARNING: Arguments are unknown!
-    public EAppError LaunchShortcut(AppId_t appid, int maybeLaunchOption);  // argc: 2, index: 29, ipc args: [bytes4, bytes4], ipc returns: [bytes4]
+    public EAppError LaunchShortcut(AppId_t appid, int maybeLaunchOption);  // argc: 2, index: 25, ipc args: [bytes4, bytes4], ipc returns: [bytes4]
 }

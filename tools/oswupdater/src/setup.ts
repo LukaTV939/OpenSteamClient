@@ -10,11 +10,11 @@ async function main(): Promise<void> {
 
     mkdir(projdir + "/OpenSteamworks.Native/oldprotoc/build");
 
-    execWrap("cmake ..", {
+    await execWrap("cmake ..", {
         cwd: projdir + "/OpenSteamworks.Native/oldprotoc/build"
     })
 
-    execWrap("cmake --build . --config MinSizeRel --parallel 24 --", {
+    await execWrap("cmake --build . --config MinSizeRel --parallel 24 --", {
         cwd: projdir + "/OpenSteamworks.Native/oldprotoc/build"
     })
 }

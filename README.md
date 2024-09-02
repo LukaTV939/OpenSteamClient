@@ -8,6 +8,7 @@ Everything below is blockers for release. Lots of stuff that's only documented i
 Stuff marked later can wait for after we fix the rest of these things.
 Stuff marked future can be done eventually or just completely ignored
 Stuff marked rebranch-blocker is required to be solved before replacing the main branch. 
+- [ ] `steam://` protocol handler
 - [ ] Startup wizard
   - [ ] initial settings
   - [ ] steamapps linking 

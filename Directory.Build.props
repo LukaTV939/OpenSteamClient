@@ -3,6 +3,7 @@
         <CommonNetVersion>net8.0</CommonNetVersion>
         <ProjectRootDir>$(MSBuildThisFileDirectory)</ProjectRootDir>
         <PublishTrimmed>false</PublishTrimmed>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">

@@ -1,3 +1,10 @@
-[*.cs]
-dotnet_diagnostic.IDE0063.severity = none
-dotnet_diagnostic.IDE0270.severity = none
+root = true
+
+[*]
+dotnet_diagnostic.IDE0290.severity = none
+end_of_line=lf
+indent_style = tab
+indent_size = 4
+charset = utf-8
+
+# I have no idea where I'd be able to get the names for C#-specific options. A GUI editor would be really useful, but in classic Microsoft fashion it's limited to VS (and thus Windows)

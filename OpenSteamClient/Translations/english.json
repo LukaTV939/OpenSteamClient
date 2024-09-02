@@ -71,6 +71,7 @@
         "#Tab_Console": "Console",
         "#Tab_Store": "Store",
         "#Tab_Community": "Community",
+        "#PageHeader_UnloadPage": "Unload",
         "#FriendsUI_ShowList": "Show Friends list",
         "#FriendsUI_PersonaState_Online": "Online",
         "#FriendsUI_PersonaState_Away": "Away",

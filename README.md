@@ -207,7 +207,7 @@ NOTE: The features mentioned here are the criteria for release. These may not be
 # Contributing
 See [CONTRIBUTING.md](https://github.com/OpenSteamClient/OpenSteamClient/blob/c%23-remake/CONTRIBUTING.md) for guidelines.
 Clone by running `git clone -b c#-remake --single-branch https://github.com/OpenSteamClient/opensteamclient.git --recursive`
-Compile and run by going into OpenSteamClient and running `dotnet run -v:m`.
+Compile and run by going into MainExe and running `dotnet run`.
 Occasionally updates break existing repos, just delete the whole repo and reclone if that happens.
 
 ## Testing
@@ -228,10 +228,8 @@ Once this is in a good enough state I will write new install instructions.
 - MSVC
 ## Linux
 ### For development
-- Ubuntu 23.04 or newer (maybe optional if not using MingW)
+- Arch Linux
 - MingW 10.0.0/GCC12 (optional if Windows cross compile not wanted)
-- OSXCross (if you want a macos cross compile)
-  - You might get cryptic errors without the newest mingw, such as `std::this_thread` missing 
 - GCC, G++, CMake
 
 ## Credits

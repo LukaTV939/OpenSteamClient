@@ -1,5 +1,5 @@
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.KeyValue;
 using OpenSteamworks.KeyValue.ObjectGraph;
 using OpenSteamworks.KeyValue.Deserializers;

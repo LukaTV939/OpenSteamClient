@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using OpenSteamClient.Logging;
 using OpenSteamworks.Extensions;
 using OpenSteamworks.Utils;
 

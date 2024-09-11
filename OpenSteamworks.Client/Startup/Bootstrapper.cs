@@ -13,7 +13,7 @@ using System.Runtime.Versioning;
 using OpenSteamworks.Client.Managers;
 using System.Runtime.InteropServices;
 using OpenSteamworks.Client.Config;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Utils;
 using OpenSteamworks.KeyValue;
 using OpenSteamworks.KeyValue.ObjectGraph;
@@ -21,6 +21,8 @@ using OpenSteamworks.KeyValue.Deserializers;
 using OpenSteamworks.KeyValue.Serializers;
 using System.Collections.ObjectModel;
 using Profiler;
+using OpenSteamClient.Logging;
+using OpenSteamClient.DI.Lifetime;
 
 namespace OpenSteamworks.Client.Startup;
 
@@ -96,14 +98,14 @@ public class Bootstrapper {
 
     private bool restartRequired = false;
 
-    private IExtendedProgress<int>? progressHandler;
+    private IProgress<OperationProgress>? progressHandler;
 
-    public void SetProgressObject(IExtendedProgress<int>? progressHandler) {
+    public void SetProgressObject(IProgress<OperationProgress>? progressHandler) {
         this.progressHandler = progressHandler;
     }
 
     private readonly BootstrapperState bootstrapperState;
-    private readonly Logger logger;
+    private readonly ILogger logger;
     private readonly ConfigManager configManager;
 
     public Bootstrapper(InstallManager installManager, BootstrapperState bootstrapperState, ConfigManager configManager) {
@@ -125,8 +127,7 @@ public class Bootstrapper {
         // So that leaves us no way to "transfer" the debugger from the old process to the new one, unlike with the old C++ solution where gdb just does it when execvp:ing
         if (Debugger.IsAttached) {
             hadDebugger = true;
-            progressHandler?.SetOperation("Please detach your debugger. ");
-            progressHandler?.SetSubOperation("You should re-attach once the process has restarted.");
+			progressHandler?.Report(new("Detach your debugger", "To continue, detach your debugger."));
             Debugger.Log(5, "DetachDebugger", "Please detach your debugger. You should re-attach once the process has restarted.");
             await Task.Run(() =>
             {
@@ -155,21 +156,24 @@ public class Bootstrapper {
     public async Task RunBootstrap(Action<string, string> msgBoxProvider) {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap");
         if (progressHandler == null) {
-            progressHandler = new ExtendedProgress<int>(0, 100);
+            progressHandler = new Progress<OperationProgress>();
         }
-
-        progressHandler.SetOperation("Bootstrapping");
+		
+        progressHandler.Report(new("Bootstrapping"));
 
         if (OperatingSystem.IsWindows()) {
             if (OSCheck.IsWindows11()) {
                 msgBoxProvider("Unsupported OS", "Windows 11 is unsupported.");
-            }
+            } else if (!OperatingSystem.IsWindowsVersionAtLeast(10))
+			{
+				msgBoxProvider("Unsupported OS", "Older than Windows 10 is unsupported.");
+			}
         } else if (OperatingSystem.IsLinux()) {
             if (!OSCheck.IsArchLinux()) {
                 msgBoxProvider("Unsupported distro", "Distros other than Arch Linux are unsupported.");
             }
         } else {
-            msgBoxProvider("Unsupported OS", "Only Windows and Linux are supported.");
+            msgBoxProvider("Unsupported OS", "Only Windows 10 and Arch Linux are supported.");
         }
         
         try
@@ -207,7 +211,7 @@ public class Bootstrapper {
             IEnumerable<Process> processes;
             while (true)
             {
-                processes = Process.GetProcessesByName("ClientUI").Where(p => p.Id != Environment.ProcessId);
+                processes = Process.GetProcessesByName("OpenSteamClient").Where(p => p.Id != Environment.ProcessId);
                 
                 if (!processes.Any()) {
                     break;
@@ -224,9 +228,10 @@ public class Bootstrapper {
                         break;
                     }
                 }
-
-                System.Threading.Thread.Sleep(1000);
-                Logger.GeneralLogger.Trace("Waiting for ClientUI to terminate");
+				
+				progressHandler.Report(new("Bootstrapping", "Waiting for previous instances to terminate"));
+				Logger.GeneralLogger.Trace("Waiting for OpenSteamClient to terminate");
+				await Task.Delay(1000);                
             }
 
             // Blacklist these as well so we don't get file lock errors in the bootstrapper
@@ -237,8 +242,9 @@ public class Bootstrapper {
                     break;
                 }
 
-                System.Threading.Thread.Sleep(1000);
-                Logger.GeneralLogger.Trace("Waiting for steamerrorreporter to terminate");
+				progressHandler.Report(new("Bootstrapping", "Waiting for previous instances to terminate"));
+				Logger.GeneralLogger.Trace("Waiting for steamerroreporter to terminate");
+				await Task.Delay(1000);   
             }
         }
 
@@ -254,8 +260,9 @@ public class Bootstrapper {
                     break;
                 }
 
-                System.Threading.Thread.Sleep(1000);
-                Logger.GeneralLogger.Trace("Waiting for steamserviced to terminate");
+                progressHandler.Report(new("Bootstrapping", "Waiting for previous instances to terminate"));
+				Logger.GeneralLogger.Trace("Waiting for steamserviced to terminate");
+				await Task.Delay(1000);   
             }
         }
 
@@ -288,15 +295,15 @@ public class Bootstrapper {
             if (!bootstrapperState.LinuxPermissionsSet)
             {
                 using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap - Linux: Set permissions");
-                progressHandler.SetOperation($"Setting proper permissions (this may freeze)");
-                progressHandler.SetThrobber();
+				progressHandler.Report(new("Marking files as executable"));
+
                 // Valve doesn't include permission info in the zips, so chmod them all to allow execute
                 await Process.Start("/usr/bin/chmod", "-R +x " + '"' + installManager.InstallDir + '"').WaitForExitAsync();
 
                 bootstrapperState.LinuxPermissionsSet = true;
             }
 
-            //TODO: check for steam some other way (like trying to connect)
+            //TODO: check for steam some other way (like trying to connect via IPC)
             Process[] runningSteamProcesses = Process.GetProcessesByName("steam");
             if (runningSteamProcesses.Length == 0) {
                 using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap - Linux: Update datalink");
@@ -352,12 +359,11 @@ public class Bootstrapper {
                 }
             }
         }
-            
-        progressHandler.SetOperation($"Finalizing");
-        progressHandler.SetThrobber();
 
         // Copy/Link our files over (steamserviced, 64-bit reaper and 64-bit steamlaunchwrapper, other platform specific niceties)
         CopyOpensteamFiles(progressHandler);
+
+		progressHandler.Report(new($"Saving state"));
 
         bootstrapperState.CommitHash = GitInfo.GitCommit;
         bootstrapperState.InstalledVersion = VersionInfo.STEAM_MANIFEST_VERSION;
@@ -366,9 +372,8 @@ public class Bootstrapper {
         await FinishBootstrap(progressHandler);
     }
 
-    private void CreateSymlinks(IExtendedProgress<int> progressHandler)
+    private void CreateSymlinks(IProgress<OperationProgress> progressHandler)
     {
-        progressHandler.SetSubOperation("Creating symlinks");
         logger.Info($"Creating symlinks");
         // Specify path mappings here to tell the files to link into another folder as well
         Dictionary<string, string> pathMappings = new() {
@@ -476,18 +481,18 @@ public class Bootstrapper {
         }
     }
 
-    private async Task FinishBootstrap(IExtendedProgress<int> progressHandler) {
+    private async Task FinishBootstrap(IProgress<OperationProgress> progressHandler) {
         // Currently only linux needs a restart (for LD_PRELOAD and LD_LIBRARY_PATH from the runtime and our libs)
         var hasReran = UtilityFunctions.GetEnvironmentVariable("OPENSTEAM_RAN_EXECVP") == "1";
         restartRequired = OperatingSystem.IsLinux() && !hasReran;
         
         SetEnvsForSteamLoad();
-        progressHandler.SetOperation("Bootstrapping Completed" + (restartRequired ? ", restarting" : ""));
+		progressHandler.Report(new("Bootstrapping Completed" + (restartRequired ? ", restarting" : "")));
 
         await RestartIfNeeded(progressHandler);
     }
 
-    private async Task RestartIfNeeded(IExtendedProgress<int> progressHandler) {
+    private async Task RestartIfNeeded(IProgress<OperationProgress> progressHandler) {
         bool debuggerShouldReattach = UtilityFunctions.GetEnvironmentVariable("OPENSTEAM_REATTACH_DEBUGGER") == "1";
 
         if (restartRequired) {
@@ -495,8 +500,7 @@ public class Bootstrapper {
         } else {
             // Can't forcibly attach the debugger either
             if (debuggerShouldReattach) {
-                progressHandler.SetOperation("Waiting for debugger to re-attach before continuing...");
-                progressHandler.SetSubOperation("PID: " + Environment.ProcessId + ", Name: " + Process.GetCurrentProcess().ProcessName);
+				progressHandler.Report(new($"Waiting for debugger to re-attach before continuing...", $"PID: {Environment.ProcessId}, Name: {Process.GetCurrentProcess().ProcessName}"));
                 await Task.Run(() =>
                 {
                     while (!Debugger.IsAttached)
@@ -589,7 +593,7 @@ public class Bootstrapper {
        UtilityFunctions.SetEnvironmentVariable("BREAKPAD_DUMP_LOCATION", Path.Combine(installManager.InstallDir, "dumps"));
     }
     
-    private bool VerifyFiles(IExtendedProgress<int> progressHandler, out IEnumerable<string> failureReason) {
+    private bool VerifyFiles(IProgress<OperationProgress> progressHandler, out IEnumerable<string> failureReason) {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.VerifyFiles");
 
         var failureReasons = new List<string>();
@@ -608,11 +612,8 @@ public class Bootstrapper {
         }
         int installedFilesLength = bootstrapperState.InstalledFiles.Count;
         int checkedFiles = 0;
-
-        progressHandler.SetOperation("Checking files");
-
-        // Convert absolute progress (files checked) into relative progress (0% - 100%)
-        var relativeProgress = new Progress<long>(totalFiles => progressHandler.Report((int)(totalFiles / checkedFiles) * 100));
+		
+        progressHandler.Report(new("Checking files"));
         
         foreach (var installedFile in bootstrapperState.InstalledFiles)
         {
@@ -642,14 +643,14 @@ public class Bootstrapper {
         }
 
         if (installedFilesLength > 0 && !failed) {
-            progressHandler.SetProgress(progressHandler.MaxProgress);
-            return true;
+			progressHandler.Report(new("Checking files", string.Empty, 100));
+			return true;
         }
         
         return false;
     }
 
-    private async Task EnsurePackages(Action<string, string> msgBoxProvider, IExtendedProgress<int> progressHandler) {
+    private async Task EnsurePackages(Action<string, string> msgBoxProvider, IProgress<OperationProgress> progressHandler) {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.EnsurePackages");
 
         downloadedPackages.Clear();
@@ -673,7 +674,7 @@ public class Bootstrapper {
 
         KVObject data = KVTextDeserializer.Deserialize(text);
 
-        progressHandler.SetOperation("Ensuring necessary packages");
+        progressHandler.Report(new($"Verifying packages"));
         foreach (var package in data.Children)
         {
             // Blacklist children that aren't objects
@@ -731,8 +732,8 @@ public class Bootstrapper {
             // Download the file if it doesn't exist
             if (!File.Exists(saveLocation)) {
                 using (var stream = new FileStream(saveLocation, FileMode.Create, FileAccess.Write, FileShare.None)) {
-                    progressHandler.SetSubOperation($"Downloading {package.Name}{(string.IsNullOrEmpty(specialVersion) ? "" : ' ' + specialVersion)}");
-                    await Client.HttpClient.DownloadAsync(url, stream, progressHandler, size_expected, default);
+					var downloadProgress = new Progress<int>(percent => progressHandler.Report(new($"Downloading packages", $"Downloading {package.Name}{(string.IsNullOrEmpty(specialVersion) ? "" : ' ' + specialVersion)}",	percent)));
+                    await Client.HttpClient.DownloadAsync(url, stream, downloadProgress, size_expected, default);
                 }
             }
 
@@ -740,7 +741,7 @@ public class Bootstrapper {
             bool verifySucceeded = false;
             using (SHA256 SHA256 = SHA256.Create())
             {
-                progressHandler.SetSubOperation($"Verifying {package.Name}");
+				progressHandler.Report(new($"Verifying packages", package.Name));
                 using (var stream = new FileStream(saveLocation, FileMode.Open, FileAccess.Read, FileShare.Read)) {
                     var sha2_calculated = Convert.ToHexString(SHA256.ComputeHash(stream));
                     verifySucceeded = sha2_calculated == sha2_expected;
@@ -779,27 +780,28 @@ public class Bootstrapper {
        
     });
 
-    private async Task ExtractPackages(IExtendedProgress<int> progressHandler) {
+    private async Task ExtractPackages(IProgress<OperationProgress> progressHandler) {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.ExtractPackages");
 
         // Extract all the packages
-        progressHandler.SetOperation("Extracting packages");
+        progressHandler.Report(new($"Extracting packages"));
+
         bootstrapperState.InstalledFiles.Clear();
         foreach (var zip in downloadedPackages)
         {
             using (ZipArchive archive = ZipFile.OpenRead(zip.Value))
             {
-                await archive.ExtractToDirectory(installManager.InstallDir, progressHandler, blacklistedFiles, (ZipArchiveEntry entry, string name) => {
+        		var extractProgress = new Progress<int>(percent => progressHandler.Report(new($"Extracting packages", string.Empty,	percent)));
+
+                await archive.ExtractToDirectory(installManager.InstallDir, extractProgress, blacklistedFiles, (ZipArchiveEntry entry, string name) => {
                     bootstrapperState.InstalledFiles[name] = entry.Length;
                 });
             }
         }
-
-        progressHandler.SetOperation("Extracted packages");
     }
     
     [SupportedOSPlatform("linux")] 
-    private async Task CheckSteamRuntime(IExtendedProgress<int> progressHandler) {
+    private async Task CheckSteamRuntime(IProgress<OperationProgress> progressHandler) {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CheckSteamRuntime");
         await CheckSteamRuntimeSingle(progressHandler, Ubuntu12_32Dir);
         try
@@ -814,7 +816,7 @@ public class Bootstrapper {
     }
 
     [SupportedOSPlatform("linux")]
-    private async Task CheckSteamRuntimeSingle(IExtendedProgress<int> progressHandler, string rootPath, string flavour = "") {
+    private async Task CheckSteamRuntimeSingle(IProgress<OperationProgress> progressHandler, string rootPath, string flavour = "") {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CheckSteamRuntimeSingle");
 
         string flavourPrefix = string.Empty;
@@ -828,13 +830,9 @@ public class Bootstrapper {
             flavour = "vanilla";
         }
 
-        progressHandler.SetOperation($"Processing Steam Runtime ({flavour})");
+		progressHandler.Report(new($"Processing Steam Runtime ({flavour})", "Checking for runtime version change..."));
 
         string runtimeDir = Path.Combine(rootPath, $"steam-runtime{flavourPrefix}");
-        
-        progressHandler.SetThrobber();
-        progressHandler.SetSubOperation("Checking for runtime version change...");
-
         bool extractRuntime = false;
         byte[] checksumBytes;
         var ckFile = Path.Combine(rootPath, $"steam-runtime{flavourPrefix}.tar.xz.checksum");
@@ -860,7 +858,8 @@ public class Bootstrapper {
         bool hasSetupScript = File.Exists(setupScriptPath);
 
         if (extractRuntime) {
-            await ExtractSteamRuntime(progressHandler, rootPath, flavourPrefix);
+			progressHandler.Report(new($"Processing Steam Runtime ({flavour})", "Extracting"));
+            await ExtractSteamRuntime(rootPath, flavourPrefix);
 
             // If everything succeeds, record current hash to file
             bootstrapperState.LinuxRuntimeChecksums[flavour] = runtime_checksum_md5_new;
@@ -871,8 +870,7 @@ public class Bootstrapper {
         {
             // Always run setup.sh (if it exists)
             using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CheckSteamRuntimeSingle - Runtime setup.sh");
-            progressHandler.SetThrobber();
-            progressHandler.SetSubOperation("Running runtime setup...");
+            progressHandler.Report(new($"Processing Steam Runtime ({flavour})", "Running runtime setup"));
 
             Process proc = new();
             proc.StartInfo.FileName = setupScriptPath;
@@ -886,7 +884,7 @@ public class Bootstrapper {
 
             // Only run pinning if we extracted a new runtime
             if (extractRuntime) {
-                progressHandler.SetSubOperation("Pinning runtime libs");
+                progressHandler.Report(new($"Processing Steam Runtime ({flavour})", "Pinning runtime libs"));
 
                 Process procpin = new();
                 procpin.StartInfo.FileName = setupScriptPath;
@@ -900,7 +898,7 @@ public class Bootstrapper {
     }
 
     [SupportedOSPlatform("linux")]
-    private async Task ExtractSteamRuntime(IExtendedProgress<int> progressHandler, string rootPath, string flavourPrefix) {
+    private async Task ExtractSteamRuntime(string rootPath, string flavourPrefix) {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.ExtractSteamRuntime");
         string runtimeDir = Path.Combine(rootPath, $"steam-runtime{flavourPrefix}");
 
@@ -945,9 +943,6 @@ public class Bootstrapper {
             proc.StartInfo.CreateNoWindow = true;
             proc.StartInfo.UseShellExecute = false;
 
-            progressHandler.SetThrobber();
-            progressHandler.SetSubOperation($"Unzipping Steam Runtime");
-
             logger.Info($"Starting tar");
             proc.Start();
 
@@ -959,11 +954,9 @@ public class Bootstrapper {
                 throw new Exception("tar exited with failure exitcode: " + proc.ExitCode);
             }
         }
-
-        progressHandler.SetProgress(progressHandler.MaxProgress);
     }
 
-    private void CopyOpensteamFiles(IExtendedProgress<int> progressHandler) {
+    private void CopyOpensteamFiles(IProgress<OperationProgress> progressHandler) {
         using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CopyOpensteamFiles");
 
         // Specify path mappings here to copy certain natives
@@ -1011,7 +1004,7 @@ public class Bootstrapper {
 
         bool copiedAnyFiles = false;
 
-        progressHandler.SetSubOperation("Copying OpenSteam files");
+		progressHandler.Report(new("Copying needed files"));
         foreach (var pathMapping in pathMappings)
         {
             var source = Path.Combine(nativesFolder, pathMapping.Key);

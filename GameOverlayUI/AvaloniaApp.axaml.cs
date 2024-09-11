@@ -3,7 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using OpenSteamworks.Client.Managers;
 using Avalonia.Controls;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using Avalonia.Threading;
 using AvaloniaCommon;
 using Profiler;

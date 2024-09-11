@@ -1,3 +1,5 @@
+using OpenSteamClient.Logging;
+
 namespace OpenSteamworks.Client.Utils;
 
 public class StreamPiper

@@ -1,6 +1,8 @@
 using OpenSteamworks.Client.Startup;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Generated;
+using OpenSteamworks.Data;
+using OpenSteamClient.DI.Lifetime;
 
 namespace OpenSteamworks.Client.Managers;
 
@@ -16,7 +18,7 @@ public class ShaderManager : IClientLifetime
         this.shader = shader;
     }
 
-    public async Task RunShutdown(IProgress<string> operation)
+    public async Task RunShutdown(IProgress<OperationProgress> operation)
     {
         shader.EnableShaderManagement(false);
         shader.EnableShaderBackgroundProcessing(false);
@@ -24,7 +26,7 @@ public class ShaderManager : IClientLifetime
         await Task.CompletedTask;
     }
 
-    public async Task RunStartup()
+    public async Task RunStartup(IProgress<OperationProgress> progress)
     {
         HadShadersEnabled = shader.BIsShaderManagementEnabled();
         shader.EnableShaderManagement(false);

@@ -2,12 +2,15 @@ using OpenSteamworks.Callbacks;
 using OpenSteamworks.Callbacks.Structs;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
-using OpenSteamworks.Enums;
+using OpenSteamClient.DI;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.KeyValue.ObjectGraph;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
+using OpenSteamworks.Data;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Apps.Compat;
 
@@ -18,7 +21,7 @@ public class CompatManager : ILogonLifetime {
     private readonly IClientCompat clientCompat;
     private readonly Dictionary<string, ERemoteStoragePlatform> compatToolPlatforms = new();
     private readonly Dictionary<string, string> compatToolFriendlyNames = new();
-    private readonly Logger logger;
+    private readonly ILogger logger;
     private readonly AppsManager appsManager;
 
     public IEnumerable<string> AllCompatTools => compatToolPlatforms.Keys;
@@ -171,12 +174,12 @@ public class CompatManager : ILogonLifetime {
         throw new ArgumentException($"Compat tool '{compatToolName}' not found and making best guess failed", nameof(compatToolName));
     }
 
-    public async Task OnLoggedOn(IExtendedProgress<int> progress, LoggedOnEventArgs e)
+    public async Task RunLogon(IProgress<OperationProgress> progress)
     {
         await Task.Run(() => RefreshCompatTools());
     }
 
-    public async Task OnLoggingOff(IProgress<string> progress)
+    public async Task RunLogoff(IProgress<OperationProgress> progress)
     {
         this.compatToolPlatforms.Clear();
         this.compatToolFriendlyNames.Clear();

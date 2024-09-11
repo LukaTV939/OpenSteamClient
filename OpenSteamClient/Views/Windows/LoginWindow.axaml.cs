@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using OpenSteamClient.DI;
 using OpenSteamClient.Extensions;
 using OpenSteamClient.ViewModels;
 using OpenSteamworks.Client.Managers;
@@ -23,7 +24,7 @@ public partial class LoginWindow : Window
     {
         SecondFactorNeededDialog dialog = new()
         {
-            DataContext = AvaloniaApp.Container.ConstructOnly<SecondFactorNeededDialogViewModel>(e),
+            DataContext = AvaloniaApp.Container.Construct<SecondFactorNeededDialogViewModel>(e),
         };
         dialog.ShowDialog(this);
     }

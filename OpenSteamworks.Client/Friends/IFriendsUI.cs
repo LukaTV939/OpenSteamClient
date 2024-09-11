@@ -1,5 +1,5 @@
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
 
 namespace OpenSteamworks.Client.Friends;
 

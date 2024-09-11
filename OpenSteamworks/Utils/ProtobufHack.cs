@@ -77,10 +77,10 @@ public unsafe static class ProtobufHack {
     }
 
     [DllImport("protobufhack")]
-    public static extern size_t Protobuf_ByteSizeLong(IntPtr ptr);
+    public static extern UInt32 Protobuf_ByteSizeLong(IntPtr ptr);
 
     [DllImport("protobufhack")]
-    public static extern bool Protobuf_SerializeToArray(IntPtr ptr, void* buffer, size_t maxLen);
+    public static extern bool Protobuf_SerializeToArray(IntPtr ptr, void* buffer, UInt32 maxLen);
 
     public static T GetFromPointer<T>(IntPtr ptr) where T: IMessage<T>, new() {
         var parser = new MessageParser<T>(() => new T());

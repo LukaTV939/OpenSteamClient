@@ -4,13 +4,15 @@ using OpenSteamworks.Callbacks.Structs;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
-using OpenSteamworks.Enums;
+using OpenSteamClient.DI;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.KeyValue.ObjectGraph;
 using OpenSteamworks.Protobuf;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 using SkiaSharp;
+using OpenSteamClient.DI.Lifetime;
 
 namespace OpenSteamworks.Client.Friends;
 
@@ -132,9 +134,17 @@ public class FriendsManager : ILogonLifetime
     private readonly IClientUser user;
     private readonly IClientFriends friends;
     private readonly IClientUtils utils;
-    private readonly UserSettings userSettings;
-    private readonly Container container;
-    private IFriendsUI? FriendsUI => container.GetNullable<IFriendsUI>();
+    private UserSettings? userSettings;
+    private readonly IContainer container;
+    private IFriendsUI? FriendsUI {
+		get {
+			if (container.TryGet(out IFriendsUI? friendsUI)) {
+				return friendsUI;
+			}
+
+			return null;
+		}
+	}
 
     public event EventHandler<Tuple<Entity, EPersonaChange>>? EntityChanged;
 
@@ -173,15 +183,14 @@ public class FriendsManager : ILogonLifetime
         return buf;
     }
 
-    public FriendsManager(Container container, ISteamClient client, UserSettings userSettings) {
+    public FriendsManager(IContainer container, ISteamClient client) {
         this.container = container;
         this.user = client.IClientUser;
         this.friends = client.IClientFriends;
         this.utils = client.IClientUtils;
-        this.userSettings = userSettings;
-        client.CallbackManager.RegisterHandler<OpenFriendsDialog_t>(OnOpenFriendsDialog);
-        client.CallbackManager.RegisterHandler<OpenChatDialog_t>(OnOpenChatDialog);
-        client.CallbackManager.RegisterHandler<PersonaStateChange_t>(OnPersonaStateChange);
+        client.CallbackManager.Register<OpenFriendsDialog_t>(OnOpenFriendsDialog);
+        client.CallbackManager.Register<OpenChatDialog_t>(OnOpenChatDialog);
+        client.CallbackManager.Register<PersonaStateChange_t>(OnPersonaStateChange);
     }
 
     public IEnumerable<Entity> GetFriendEntities()
@@ -190,31 +199,32 @@ public class FriendsManager : ILogonLifetime
 
     public bool IsFriendsWith(CSteamID steamid) => friends.HasFriend(steamid, EFriendFlags.Immediate);
 
-    private void OnPersonaStateChange(CallbackManager.CallbackHandler<PersonaStateChange_t> handler, PersonaStateChange_t t)
+    private void OnPersonaStateChange(ICallbackHandler handler, PersonaStateChange_t t)
     {
         EntityChanged?.Invoke(this, new(GetEntity(t.steamid), t.changeFlags));
     }
 
-    private void OnOpenChatDialog(CallbackManager.CallbackHandler<OpenChatDialog_t> handler, OpenChatDialog_t t)
+    private void OnOpenChatDialog(ICallbackHandler handler, OpenChatDialog_t t)
     {
         FriendsUI?.ShowChatUI(t.ChatID);
     }
 
-    private void OnOpenFriendsDialog(CallbackManager.CallbackHandler<OpenFriendsDialog_t> handler, OpenFriendsDialog_t t)
+    private void OnOpenFriendsDialog(ICallbackHandler handler, OpenFriendsDialog_t t)
     {
         FriendsUI?.ShowFriendsList();
     }
 
-    public async Task OnLoggedOn(IExtendedProgress<int> progress, LoggedOnEventArgs e)
+    public async Task RunLogon(IProgress<OperationProgress> progress)
     {
-        if (userSettings.LoginToFriendsNetworkAutomatically) {
+		userSettings = Client.Instance!.Container.Get<UserSettings>();
+		if (userSettings.LoginToFriendsNetworkAutomatically) {
             this.user.SetSelfAsChatDestination(true);
         }
 
         await Task.CompletedTask;
     }
 
-    public async Task OnLoggingOff(IProgress<string> progress)
+    public async Task RunLogoff(IProgress<OperationProgress> progress)
     {
         await Task.CompletedTask;
     }

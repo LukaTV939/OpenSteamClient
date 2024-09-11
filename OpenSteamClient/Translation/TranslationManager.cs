@@ -18,11 +18,13 @@ using OpenSteamworks.Client;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
-using OpenSteamworks.Enums;
+using OpenSteamClient.DI;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.Utils;
 using Profiler;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamClient.Translation;
 
@@ -40,10 +42,9 @@ public class TranslationManager : ILogonLifetime
     private readonly IClientUser clientUser;
     private readonly IClientUtils clientUtils;
     private readonly InstallManager installManager;
-    private readonly Container container;
+    private readonly IContainer container;
     private readonly ConfigManager configManager;
-    private readonly Logger logger;
-    internal Logger Logger => logger;
+    internal readonly ILogger logger;
 
     private UserSettings userSettings
     {
@@ -54,7 +55,7 @@ public class TranslationManager : ILogonLifetime
     }
 
     public static IEnumerable<ELanguage> ValidUILanguages => new ELanguage[] { ELanguage.English, ELanguage.Finnish };
-    public TranslationManager(IClientUser clientUser, IClientUtils clientUtils, InstallManager installManager, Container container, ConfigManager configManager)
+    public TranslationManager(IClientUser clientUser, IClientUtils clientUtils, InstallManager installManager, IContainer container, ConfigManager configManager)
     {
         this.logger = Logger.GetLogger("TranslationManager", installManager.GetLogPath("TranslationManager"));
         this.clientUser = clientUser;
@@ -290,7 +291,7 @@ public class TranslationManager : ILogonLifetime
         }
     }
 
-    async Task ILogonLifetime.OnLoggedOn(IExtendedProgress<int> progress, LoggedOnEventArgs e)
+    async Task ILogonLifetime.RunLogon(IProgress<OperationProgress> progress)
     {
         if (userSettings.Language != ELanguage.None) {
             await Task.Run(() => this.SetLanguage(userSettings.Language));
@@ -299,7 +300,7 @@ public class TranslationManager : ILogonLifetime
         }
     }
 
-    async Task ILogonLifetime.OnLoggingOff(IProgress<string> progress)
+    async Task ILogonLifetime.RunLogoff(IProgress<OperationProgress> operation)
     {
         await Task.CompletedTask;
     }

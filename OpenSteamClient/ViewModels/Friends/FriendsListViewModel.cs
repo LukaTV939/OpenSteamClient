@@ -7,8 +7,9 @@ using OpenSteamworks.Utils;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenSteamClient.UIImpl;
 using OpenSteamworks.Client.Friends;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.ViewModels.Friends;
 

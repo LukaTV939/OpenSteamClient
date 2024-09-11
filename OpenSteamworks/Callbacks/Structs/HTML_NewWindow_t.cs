@@ -1,12 +1,15 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
+[Callback(4521)]
 [StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
-public unsafe struct HTML_NewWindow_t
+public struct HTML_NewWindow_t
 {
 	public HHTMLBrowser unBrowserHandle;
 	public string pchURL;
@@ -15,4 +18,4 @@ public unsafe struct HTML_NewWindow_t
 	public UInt32 unWide;
 	public UInt32 unTall;
 	public HHTMLBrowser unNewWindow_BrowserHandle_IGNORE;
-};
+}

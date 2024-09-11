@@ -12,6 +12,7 @@ using OpenSteamworks.Client.Apps;
 using OpenSteamworks.Client.Apps.Library;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Utils;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.ViewModels;
 
@@ -115,7 +116,7 @@ public partial class LibraryPageViewModel : AvaloniaCommon.ViewModelBase
         }
 
         var pane = new FocusedAppPane();
-        pane.DataContext = AvaloniaApp.Container.ConstructOnly<FocusedAppPaneViewModel>(pane, SelectedNodes[0].GameID);
+        pane.DataContext = AvaloniaApp.Container.Construct<FocusedAppPaneViewModel>(pane, SelectedNodes[0].GameID);
         SideContent = pane;
     }
 

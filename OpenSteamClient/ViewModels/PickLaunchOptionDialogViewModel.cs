@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OpenSteamClient.DI;
 using OpenSteamClient.Translation;
 using OpenSteamClient.Views;
 using OpenSteamworks.Client.Apps;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamClient.ViewModels;
 
@@ -37,7 +39,7 @@ public partial class PickLaunchOptionDialogViewModel : AvaloniaCommon.ViewModelB
         string name = opt.Name;
         if (string.IsNullOrEmpty(opt.Name)) {
             string translationKey = "#LaunchOptionDialog_GenericOption";
-            if (app.Type == OpenSteamworks.Enums.EAppType.Game) {
+            if (app.Type == EAppType.Game) {
                 translationKey += "Game";
             } else {
                 translationKey += "App";

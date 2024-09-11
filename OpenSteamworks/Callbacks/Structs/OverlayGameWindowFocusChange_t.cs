@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct OverlayGameWindowFocusChange_t
+[Callback(1020105)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct OverlayGameWindowFocusChange_t
 {
-};
+}

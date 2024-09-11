@@ -1,7 +1,7 @@
 ﻿using Avalonia;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using Avalonia.Headless;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using GameOverlayUI.IPC;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;

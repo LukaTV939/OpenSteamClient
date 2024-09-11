@@ -1,18 +1,21 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct WindowFocusChanged_t
+[Callback(1040015)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct WindowFocusChanged_t
 {
     public AppId_t appid;
     public UInt32 unk1;
     public UInt32 pidOfProgram;
-    public UInt8 unk3;
-    public UInt8 unk4;
-    public UInt8 unk5;
-    public UInt8 unk6;
-};
+    public byte unk3;
+    public byte unk4;
+    public byte unk5;
+    public byte unk6;
+}

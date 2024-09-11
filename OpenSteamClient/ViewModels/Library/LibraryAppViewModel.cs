@@ -10,7 +10,8 @@ using OpenSteamClient.ViewModels.Library;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenSteamworks.Client.Apps;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.ViewModels.Library;
 

@@ -8,11 +8,13 @@
 
 using System;
 using OpenSteamworks.Attributes;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientConfigStore
 {
     public bool IsSet( EConfigStore eConfigStore, string pszKeyNameIn );  // argc: 2, index: 1, ipc args: [bytes4, string], ipc returns: [boolean]

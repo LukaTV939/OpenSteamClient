@@ -3,8 +3,7 @@ using OpenSteamworks.Callbacks;
 using OpenSteamworks.ClientInterfaces;
 using OpenSteamworks.Downloads;
 using OpenSteamworks.Generated;
-using OpenSteamworks.IPCClient.Interfaces;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 
 namespace OpenSteamworks;
 
@@ -74,7 +73,6 @@ public interface ISteamClient {
 
     public ClientApps ClientApps { get; }
     public ClientConfigStore ClientConfigStore { get; }
-    public ClientMessaging ClientMessaging { get; }
     public CallbackManager CallbackManager { get; }
     public ClientRemoteStorage ClientRemoteStorage { get; }
     public DownloadManager DownloadManager { get; }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace OpenSteamworks.Callbacks;
 
-internal static partial class CallbackConstants {
+internal static class CallbackNameMap {
     public readonly static Dictionary<int, string> CallbackNames = new Dictionary<int, string>
     {
         {101, "23SteamServersConnected_t"},

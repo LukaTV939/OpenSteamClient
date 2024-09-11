@@ -8,11 +8,14 @@
 using System;
 using System.Runtime.Versioning;
 using OpenSteamworks.Callbacks.Structs;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
 //NOTE: the client always seems to get a 65536 browser id for it's first browser
+[CppInterface]
 public unsafe interface IClientHTMLSurface
 {
     public unknown_ret Unknown_0_DONTUSE();

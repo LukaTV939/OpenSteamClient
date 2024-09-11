@@ -1,4 +1,4 @@
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamworks.Client.CommonEventArgs;
 public class EResultEventArgs : EventArgs

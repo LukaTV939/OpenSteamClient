@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using GameOverlayUI.IPC;
-using OpenSteamworks.Client.Utils.DI;
-using OpenSteamworks.Structs;
+using OpenSteamClient.DI;
+using OpenSteamworks.Data.Structs;
 using System;
 
 namespace GameOverlayDebugTarget;

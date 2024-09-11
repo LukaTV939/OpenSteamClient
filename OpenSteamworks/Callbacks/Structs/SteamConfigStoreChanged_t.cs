@@ -1,13 +1,15 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct SteamConfigStoreChanged_t
+[Callback(1040011)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct SteamConfigStoreChanged_t
 {
 	public EConfigStore ConfigStore;
 	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
 	public string PathToChange;
-};
+}

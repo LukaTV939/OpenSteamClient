@@ -1,11 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-public unsafe struct AppInfoUpdateProgress_t
+[Callback(1280001)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct AppInfoUpdateProgress_t
 {
 	public AppId_t m_nAppID;
-};
+}

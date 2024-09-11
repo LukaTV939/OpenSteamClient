@@ -7,9 +7,12 @@
 //=============================================================================
 
 using System;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientStreamLauncher
 {
     // WARNING: Arguments are unknown!

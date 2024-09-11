@@ -7,10 +7,13 @@
 //=============================================================================
 
 using System;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientVideo
 {
     // WARNING: Arguments are unknown!

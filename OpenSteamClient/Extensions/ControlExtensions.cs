@@ -2,7 +2,10 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
+using OpenSteamClient.DI;
+using OpenSteamClient.Logging;
 using OpenSteamClient.Translation;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamClient.Extensions;
 
@@ -48,12 +51,12 @@ public static class ControlExtensions
     public static bool TryTranslateSelf(this Control control, bool dueToLayoutChange = false)
     {
         var tm = AvaloniaApp.Container.Get<Translation.TranslationManager>();
-        if (tm.CurrentTranslation.Language == OpenSteamworks.Enums.ELanguage.None)
+        if (tm.CurrentTranslation.Language == ELanguage.None)
         {
             return false;
         }
 
-        tm.Logger.Info($"Translating control {control.GetType().Name}{(dueToLayoutChange ? " (due to layout change)" : "")}");
+        tm.logger.Info($"Translating control {control.GetType().Name}{(dueToLayoutChange ? " (due to layout change)" : "")}");
         tm.TranslateVisual(control);
         return true;
     }

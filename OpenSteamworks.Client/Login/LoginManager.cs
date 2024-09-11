@@ -3,8 +3,8 @@ using OpenSteamworks.Client.Config;
 using OpenSteamworks;
 using OpenSteamworks.Attributes;
 using OpenSteamworks.Callbacks.Structs;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Client.Utils;
 using OpenSteamworks.Client.CommonEventArgs;
 using OpenSteamworks.ClientInterfaces;
@@ -17,8 +17,12 @@ using OpenSteamworks.Protobuf;
 using System.Security.Cryptography;
 using System.Text;
 using static OpenSteamworks.Callbacks.CallbackManager;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Utils;
+using OpenSteamworks.Callbacks;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamworks.Client.DI;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Managers;
 
@@ -72,9 +76,8 @@ public class LoginManager : IClientLifetime
 
     private readonly ISteamClient steamClient;
     private readonly LoginUsers loginUsers;
-    private readonly ClientMessaging clientMessaging;
-    private readonly Container container;
-    private readonly Logger logger;
+    private readonly IContainer container;
+    private readonly ILogger logger;
     private readonly ConfigManager configManager;
     private readonly ClientApps clientApps;
 
@@ -88,7 +91,7 @@ public class LoginManager : IClientLifetime
 
     public bool IsAnonUser => this.CurrentUser?.SteamID.AccountType == EAccountType.AnonUser;
 
-    public LoginManager(ISteamClient steamClient, ClientApps clientApps, LoginUsers loginUsers, ConfigManager configManager, Container container, ClientMessaging clientMessaging, InstallManager installManager)
+    public LoginManager(ISteamClient steamClient, ClientApps clientApps, LoginUsers loginUsers, ConfigManager configManager, IContainer container, InstallManager installManager)
     {
         this.clientApps = clientApps;
         this.configManager = configManager;
@@ -96,10 +99,9 @@ public class LoginManager : IClientLifetime
         this.container = container;
         this.steamClient = steamClient;
         this.loginUsers = loginUsers;
-        this.clientMessaging = clientMessaging;
-        steamClient.CallbackManager.RegisterHandler<SteamServerConnectFailure_t>(OnSteamServerConnectFailure);
-        steamClient.CallbackManager.RegisterHandler<SteamServersDisconnected_t>(OnSteamServersDisconnected);
-        steamClient.CallbackManager.RegisterHandler<PostLogonState_t>(OnPostLogonState);
+        steamClient.CallbackManager.Register<SteamServerConnectFailure_t>(OnSteamServerConnectFailure);
+        steamClient.CallbackManager.Register<SteamServersDisconnected_t>(OnSteamServersDisconnected);
+        steamClient.CallbackManager.Register<PostLogonState_t>(OnPostLogonState);
     }
 
     public bool RemoveAccount(LoginUser loginUser) {
@@ -122,11 +124,11 @@ public class LoginManager : IClientLifetime
     /// Sets a progress object for logging in. To set one for logging out and shutting down, set it within the container
     /// </summary>
     /// <param name="progress"></param>
-    public void SetProgress(IExtendedProgress<int>? progress) {
+    public void SetProgress(IProgress<OperationProgress>? progress) {
         this.loginProgress = progress;
     }
 
-    private IExtendedProgress<int>? loginProgress;
+    private IProgress<OperationProgress>? loginProgress;
 
     /// <summary>
     /// Asynchronous background tasks may throw. If no exception handler is explicitly specified, C# will eat the errors and silently fail.
@@ -147,16 +149,16 @@ public class LoginManager : IClientLifetime
 
         Task.Run(async () =>
         {
-            using (Connection conn = clientMessaging.AllocateConnection())
+            using (SharedConnection conn = SharedConnection.AllocateConnection())
             {
                 ProtoMsg<CAuthentication_BeginAuthSessionViaQR_Request> beginMsg = new("Authentication.BeginAuthSessionViaQR#1", true);
-                beginMsg.body.DeviceDetails = DeviceDetails;
+                beginMsg.Body.DeviceDetails = DeviceDetails;
 
                 var beginResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_BeginAuthSessionViaQR_Response, CAuthentication_BeginAuthSessionViaQR_Request>(beginMsg);
 
-                QRGenerated?.Invoke(this, new QRGeneratedEventArgs(beginResp.body.ChallengeUrl));
+                QRGenerated?.Invoke(this, new QRGeneratedEventArgs(beginResp.Body.ChallengeUrl));
                 
-                QRPoller = new LoginPoll(this.clientMessaging, beginResp.body.ClientId, beginResp.body.RequestId, beginResp.body.Interval);
+                QRPoller = new LoginPoll(beginResp.Body.ClientId, beginResp.Body.RequestId, beginResp.Body.Interval);
                 QRPoller.ChallengeUrlGenerated += (object sender, ChallengeUrlGeneratedEventArgs e) => this.QRGenerated?.Invoke(this, new QRGeneratedEventArgs(e.URL));
                 QRPoller.RefreshTokenGenerated += OnRefreshTokenGenerated;
                 QRPoller.Error += (object sender, EResultEventArgs e) => exceptionHandler?.Invoke(new AggregateException("Error occurred in QR Poller: " + e.EResult));
@@ -184,11 +186,11 @@ public class LoginManager : IClientLifetime
             return EResult.OK;
         }
 
-        using (Connection conn = clientMessaging.AllocateConnection())
+        using (SharedConnection conn = SharedConnection.AllocateConnection())
         {
             // Get password RSA hash
             ProtoMsg<CAuthentication_GetPasswordRSAPublicKey_Request> rsaRequest = new("Authentication.GetPasswordRSAPublicKey#1", true);
-            rsaRequest.body.AccountName = username;
+            rsaRequest.Body.AccountName = username;
 
             var rsaResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_GetPasswordRSAPublicKey_Response, CAuthentication_GetPasswordRSAPublicKey_Request>(rsaRequest);
 
@@ -199,42 +201,42 @@ public class LoginManager : IClientLifetime
                 
                 var rsaParameters = new RSAParameters
                 {
-                    Modulus = Convert.FromHexString(rsaResp.body.PublickeyMod),
-                    Exponent = Convert.FromHexString(rsaResp.body.PublickeyExp),
+                    Modulus = Convert.FromHexString(rsaResp.Body.PublickeyMod),
+                    Exponent = Convert.FromHexString(rsaResp.Body.PublickeyExp),
                 };
                 rsa.ImportParameters(rsaParameters);
                 encryptedPassword = Convert.ToBase64String(rsa.Encrypt(Encoding.UTF8.GetBytes(password), RSAEncryptionPadding.Pkcs1));
             }
 
             ProtoMsg<CAuthentication_BeginAuthSessionViaCredentials_Request> beginMsg = new("Authentication.BeginAuthSessionViaCredentials#1", true);
-            beginMsg.body.DeviceDetails = DeviceDetails;
-            beginMsg.body.AccountName = username;
-            beginMsg.body.EncryptedPassword = encryptedPassword;
-            beginMsg.body.EncryptionTimestamp = rsaResp.body.Timestamp;
+            beginMsg.Body.DeviceDetails = DeviceDetails;
+            beginMsg.Body.AccountName = username;
+            beginMsg.Body.EncryptedPassword = encryptedPassword;
+            beginMsg.Body.EncryptionTimestamp = rsaResp.Body.Timestamp;
             // This one is unused, but let's set it just in case
-            beginMsg.body.RememberLogin = rememberPassword;
+            beginMsg.Body.RememberLogin = rememberPassword;
             // This determines password remembered yes/no
-            beginMsg.body.Persistence = rememberPassword ? ESessionPersistence.Persistent : ESessionPersistence.Ephemeral;
-            beginMsg.body.PlatformType = EAuthTokenPlatformType.SteamClient;
-            beginMsg.body.WebsiteId = "Client";
-            beginMsg.body.DeviceFriendlyName = DeviceDetails.DeviceFriendlyName;
+            beginMsg.Body.Persistence = rememberPassword ? ESessionPersistence.Persistent : ESessionPersistence.Ephemeral;
+            beginMsg.Body.PlatformType = EAuthTokenPlatformType.SteamClient;
+            beginMsg.Body.WebsiteId = "Client";
+            beginMsg.Body.DeviceFriendlyName = DeviceDetails.DeviceFriendlyName;
 
             var beginResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_BeginAuthSessionViaCredentials_Response, CAuthentication_BeginAuthSessionViaCredentials_Request>(beginMsg);
-            if (beginResp.header.Eresult != (int)EResult.OK) {
-                return (EResult)beginResp.header.Eresult;
+            if (beginResp.Header.Eresult != (int)EResult.OK) {
+                return (EResult)beginResp.Header.Eresult;
             }
 
             // This should always have a steamid here, otherwise we can't get it from anywhere
-            InProgressLogonSteamID = beginResp.body.Steamid;
+            InProgressLogonSteamID = beginResp.Body.Steamid;
 
             // Interval is 0.1 and/or allowedconfirmations is set to [k_EAuthSessionGuardType_None] when user has no 2fa
-            if (beginResp.body.AllowedConfirmations.All(elem => elem.ConfirmationType == EAuthSessionGuardType.None)) {
+            if (beginResp.Body.AllowedConfirmations.All(elem => elem.ConfirmationType == EAuthSessionGuardType.None)) {
                 // Only one session type, and that's the None type
             } else {
-                SecondFactorNeeded?.Invoke(this, new SecondFactorNeededEventArgs(beginResp.body.AllowedConfirmations));
+                SecondFactorNeeded?.Invoke(this, new SecondFactorNeededEventArgs(beginResp.Body.AllowedConfirmations));
             }
 
-            CredentialsPoller = new LoginPoll(this.clientMessaging, beginResp.body.ClientId, beginResp.body.RequestId, beginResp.body.Interval);
+            CredentialsPoller = new LoginPoll(beginResp.Body.ClientId, beginResp.Body.RequestId, beginResp.Body.Interval);
             CredentialsPoller.RefreshTokenGenerated += OnRefreshTokenGenerated;
             CredentialsPoller.Error += (object sender, EResultEventArgs e) => exceptionHandler?.Invoke(new AggregateException("Error occurred in Credentials Poller: " + e.EResult));
             CredentialsPoller.StartPolling();
@@ -247,16 +249,16 @@ public class LoginManager : IClientLifetime
             throw new InvalidOperationException("Credential logon isn't running, cannot add steam guard code");
         }
 
-        using (Connection conn = clientMessaging.AllocateConnection())
+        using (SharedConnection conn = SharedConnection.AllocateConnection())
         {
             ProtoMsg<CAuthentication_UpdateAuthSessionWithSteamGuardCode_Request> updateMsg = new("Authentication.UpdateAuthSessionWithSteamGuardCode#1", true);
-            updateMsg.body.ClientId = CredentialsPoller.ClientID;
-            updateMsg.body.CodeType = codeType;
-            updateMsg.body.Code = code;
-            updateMsg.body.Steamid = InProgressLogonSteamID;
+            updateMsg.Body.ClientId = CredentialsPoller.ClientID;
+            updateMsg.Body.CodeType = codeType;
+            updateMsg.Body.Code = code;
+            updateMsg.Body.Steamid = InProgressLogonSteamID;
 
             var updateResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_UpdateAuthSessionWithSteamGuardCode_Response, CAuthentication_UpdateAuthSessionWithSteamGuardCode_Request>(updateMsg);
-            return (EResult)updateResp.header.Eresult;
+            return (EResult)updateResp.Header.Eresult;
         }
     }
 
@@ -369,13 +371,13 @@ public class LoginManager : IClientLifetime
 
     private bool isLoggingOn = false;
     private EResult? loginFinishResult;
-    public void OnSteamServerConnectFailure(CallbackHandler<SteamServerConnectFailure_t> handler, SteamServerConnectFailure_t failure) {
+    public void OnSteamServerConnectFailure(ICallbackHandler handler, SteamServerConnectFailure_t failure) {
         if (isLoggingOn) {
             loginFinishResult = failure.m_EResult;
         }
     }
 
-    public void OnSteamServersDisconnected(CallbackHandler<SteamServersDisconnected_t> handler, SteamServersDisconnected_t disconnect) {
+    public void OnSteamServersDisconnected(ICallbackHandler handler, SteamServersDisconnected_t disconnect) {
         if (CurrentUser != null) {
             if (disconnect.m_EResult == EResult.OK) {
                 OnLoggedOff(new LoggedOffEventArgs(CurrentUser, disconnect.m_EResult));
@@ -384,11 +386,11 @@ public class LoginManager : IClientLifetime
     }
 
 
-    public void OnPostLogonState(CallbackHandler<PostLogonState_t> handler, PostLogonState_t stateUpdate) {
+    public void OnPostLogonState(ICallbackHandler handler, PostLogonState_t stateUpdate) {
         if (isLoggingOn) {
             if (stateUpdate.hasAppInfo == 1 && stateUpdate.connectedToCMs == 1) {
-                loginProgress?.SetProgress(loginProgress.MaxProgress);
-                loginFinishResult = EResult.OK;
+				loginProgress?.Report(new(string.Empty, string.Empty, 100)); 
+				loginFinishResult = EResult.OK;
             }
         }
     }
@@ -416,8 +418,6 @@ public class LoginManager : IClientLifetime
 
         Task.Run(async () =>
         {
-            loginProgress?.SetThrobber();
-
             switch (user.LoginMethod)
             {
                 case LoginUser.ELoginMethod.UsernamePassword:
@@ -471,17 +471,15 @@ public class LoginManager : IClientLifetime
             this.isLoggingOn = true;
             LogonStarted?.Invoke(this, EventArgs.Empty);
 
-            loginProgress?.SetOperation("Logging on " + user.AccountName);
-
             if (user.SteamID == 0) {
                 logger.Error("SteamID is 0!");
                 OnLogonFailed(new LogOnFailedEventArgs(user, EResult.InvalidSteamID));
                 return;
             }
 
-            var appInfoUpdateComplete = steamClient.CallbackManager.AsTask<AppInfoUpdateComplete_t>();
+            var appInfoUpdateComplete = steamClient.CallbackManager.WaitAsync<AppInfoUpdateComplete_t>();
 
-            loginProgress?.SetSubOperation("Waiting for logon...");
+            loginProgress?.Report(new("Logging on " + user.AccountName, string.Empty, -1));
             EResult beginLogonResult = steamClient.IClientUser.LogOn(user.SteamID);
             logger.Info("BeginLogon returned " + beginLogonResult);
             if (beginLogonResult != EResult.OK) {
@@ -506,7 +504,7 @@ public class LoginManager : IClientLifetime
                 await configManager.SaveAsync(loginUsers);
                 
                 logger.Info("Waiting for appinfo update");
-                loginProgress?.SetSubOperation("Waiting for appinfo update");
+                loginProgress?.Report(new("Logging on " + user.AccountName, "Waiting for appinfo update", -1));
                 await clientApps.UpdateAppInfoForMissingApps(clientApps.OwnedAppIDs);
 
                 logger.Info("Finishing up");
@@ -522,15 +520,15 @@ public class LoginManager : IClientLifetime
         });
     }
 
-    public async Task LogoutAsync(IProgress<string>? operation = null, bool forget = false) {
+    public async Task LogoutAsync(IProgress<OperationProgress>? operation = null, bool forget = false) {
         UtilityFunctions.AssertNotNull(this.CurrentUser);
         await Task.Run(() => this.LoggingOff?.Invoke(this, EventArgs.Empty));
 
         if (operation == null) {
-            operation = new Progress<string>();
+            operation = new Progress<OperationProgress>();
         }
 
-        await container.RunLogoff(operation);
+        await container.Get<LifetimeManager>().RunLogoff(operation);
 
         var oldUser = CurrentUser;
 
@@ -553,7 +551,7 @@ public class LoginManager : IClientLifetime
             throw new InvalidOperationException("GetUserConfigDirectory called but we're not logged in");
         }
 
-        StringBuilder builder = new(4096*4);
+        StringBuilder builder = new(4096);
         if (this.steamClient.IClientUser.GetUserConfigFolder(builder, builder.Capacity)) {
             return builder.ToString();
         }
@@ -578,7 +576,7 @@ public class LoginManager : IClientLifetime
         CurrentUser = e.User;
         InProgressLogonSteamID = 0;
         this.loginFinishResult = null;
-        await container.RunLogon(loginProgress ?? new ExtendedProgress<int>(0, 100, ""), e);
+        await container.Get<LifetimeManager>().RunLogon(loginProgress ?? new Progress<OperationProgress>());
         this.isLoggingOn = false;
         await Task.Run(() => LoggedOn?.Invoke(this, e));
     }
@@ -600,15 +598,15 @@ public class LoginManager : IClientLifetime
         });
     }
 
-    public async Task RunStartup()
+    public async Task RunStartup(IProgress<OperationProgress> operation)
     {
         await Task.CompletedTask;
     }
 
-    public async Task RunShutdown(IProgress<string> operation)
+    public async Task RunShutdown(IProgress<OperationProgress> operation)
     {
         if (this.IsLoggedOn() && this.steamClient.ConnectedWith == ConnectionType.NewClient) {
-            operation.Report("Logging out");
+            operation.Report(new("Logging out"));
 
             logger.Info("Shutting down and logged in, logging out");
             try

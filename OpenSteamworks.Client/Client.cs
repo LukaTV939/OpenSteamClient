@@ -8,7 +8,7 @@ using System.Reflection;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Generated;
 using OpenSteamworks.ClientInterfaces;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Client.Apps;
 using OpenSteamworks.Client.Apps.Library;
 using System.Net;
@@ -17,6 +17,8 @@ using OpenSteamworks.Client.Apps.Compat;
 using OpenSteamworks.Downloads;
 using Profiler;
 using OpenSteamworks.Client.Experimental;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client;
 
@@ -36,8 +38,8 @@ public class Client : IClientLifetime
     }
 
     internal static Client? Instance { get; private set; }
-    internal Container Container { get; init; }
-    public async Task RunStartup()
+    internal IContainer Container { get; init; }
+    public async Task RunStartup(IProgress<OperationProgress> progress)
     {   
         await Task.Run(() => {
             var args = Environment.GetCommandLineArgs();
@@ -45,14 +47,15 @@ public class Client : IClientLifetime
         });
     }
 
-    public async Task RunShutdown(IProgress<string> operation)
+    public async Task RunShutdown(IProgress<OperationProgress> operation)
     {
         await Task.Run(() => {
-            Container.Get<ISteamClient>().Shutdown(operation);
+			Progress<string> prog = new(p => operation.Report(new(p)));
+			Container.Get<ISteamClient>().Shutdown(prog);
         });
     }
 
-    public Client(Container container)
+    public Client(IContainer container)
     {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("OpenSteamworks.Client - Client construction");
 
@@ -62,29 +65,20 @@ public class Client : IClientLifetime
         Logger.GeneralLogger = Logger.GetLogger("OpenSteamworks.Client", container.Get<InstallManager>().GetLogPath("OpenSteamworks.Client"));
         container.RegisterFactoryMethod<ISteamClient>((Bootstrapper bootstrapper, AdvancedConfig advancedConfig, InstallManager im) =>
         {
-            Logging.GeneralLogger = Logger.GetLogger("OpenSteamworks", im.GetLogPath("OpenSteamworks"));
-            var nativeClientLogger = Logger.GetLogger("OpenSteamworks-NativeClient"); // im.GetLogPath("OpenSteamworks_NativeClient")
-            nativeClientLogger.AddPrefix = false;
-            Logging.NativeClientLogger = nativeClientLogger;
-            Logging.IPCLogger = Logger.GetLogger("OpenSteamworks-IPCClient", im.GetLogPath("OpenSteamworks_IPCClient"));
-            Logging.CallbackLogger = Logger.GetLogger("OpenSteamworks-Callbacks", im.GetLogPath("OpenSteamworks_Callbacks"));
-            Logging.JITLogger = Logger.GetLogger("OpenSteamworks-JIT", im.GetLogPath("OpenSteamworks_JIT"));
-            Logging.ConCommandsLogger = Logger.GetLogger("OpenSteamworks-ConCommands", im.GetLogPath("OpenSteamworks_ConCommands"));
-            Logging.MessagingLogger = Logger.GetLogger("OpenSteamworks-Messaging", im.GetLogPath("OpenSteamworks_Messaging"));
-            Logging.CUtlLogger = Logger.GetLogger("OpenSteamworks-CUtl", im.GetLogPath("OpenSteamworks_CUtl"));
-            Logging.LogIncomingCallbacks = advancedConfig.LogIncomingCallbacks;
-            Logging.LogCallbackContents = advancedConfig.LogCallbackContents;
-            if (advancedConfig.EnabledConnectionTypes == ConnectionType.ExperimentalIPCClient) {
-                // return new IPCSteamClient(advancedConfig.SteamClientSpew);
-            }
+			LoggingSettings loggingSettings = new()
+			{
+				EnableSpew = advancedConfig.SteamClientSpew,
+				LogCallbackContents = advancedConfig.LogCallbackContents,
+				LogIncomingCallbacks = advancedConfig.LogIncomingCallbacks,
+				LoggerFactory = container.Get<ILoggerFactory>()
+			};
 
-            return new SteamClient(bootstrapper.SteamclientLibPath, advancedConfig.EnabledConnectionTypes, advancedConfig.SteamClientSpew);
+            return new SteamClient(bootstrapper.SteamclientLibPath, advancedConfig.EnabledConnectionTypes, loggingSettings);
         });
         
         container.RegisterFactoryMethod<CallbackManager>((ISteamClient client) => client.CallbackManager);
         container.RegisterFactoryMethod<ClientApps>((ISteamClient client) => client.ClientApps);
         container.RegisterFactoryMethod<ClientConfigStore>((ISteamClient client) => client.ClientConfigStore);
-        container.RegisterFactoryMethod<ClientMessaging>((ISteamClient client) => client.ClientMessaging);
         container.RegisterFactoryMethod<ClientRemoteStorage>((ISteamClient client) => client.ClientRemoteStorage);
         container.RegisterFactoryMethod<DownloadManager>((ISteamClient client) => client.DownloadManager);
         container.RegisterFactoryMethod<IClientAppDisableUpdate>((ISteamClient client) => client.IClientAppDisableUpdate);
@@ -114,11 +108,11 @@ public class Client : IClientLifetime
         container.RegisterFactoryMethod<IClientUtils>((ISteamClient client) => client.IClientUtils);
         container.RegisterFactoryMethod<IClientVR>((ISteamClient client) => client.IClientVR);
 
+		container.ConstructAndRegister<AppsManager>();
         container.ConstructAndRegister<ShaderManager>();
         container.ConstructAndRegister<CompatManager>();
         container.ConstructAndRegister<LoginManager>();
         container.ConstructAndRegister<CloudConfigStore>();
-        container.ConstructAndRegister<AppsManager>();
         container.ConstructAndRegister<LibraryManager>();
         container.ConstructAndRegister<SteamHTML>();
         container.ConstructAndRegister<SteamService>();

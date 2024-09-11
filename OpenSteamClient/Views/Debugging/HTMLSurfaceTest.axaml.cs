@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using OpenSteamClient.DI;
 using OpenSteamClient.PlatformSpecific;
 using OpenSteamworks;
+using OpenSteamworks.Callbacks;
 using OpenSteamworks.Callbacks.Structs;
 using OpenSteamworks.Client.Startup;
 using static OpenSteamworks.Callbacks.CallbackManager;
@@ -28,7 +30,7 @@ public partial class HTMLSurfaceTest : Window
             surfaceControl.RemoveBrowser();
         };
 
-        this.client.CallbackManager.RegisterHandler<HTML_ChangedTitle_t>(OnHTML_ChangedTitle_t);
+        this.client.CallbackManager.Register<HTML_ChangedTitle_t>(OnHTML_ChangedTitle_t);
     }
 
     public async Task Init(string userAgent, string url)
@@ -37,7 +39,7 @@ public partial class HTMLSurfaceTest : Window
         this.client.IClientHTMLSurface.LoadURL(handle, url, null);
     }
 
-    private void OnHTML_ChangedTitle_t(CallbackHandler<HTML_ChangedTitle_t> handler, HTML_ChangedTitle_t data)
+    private void OnHTML_ChangedTitle_t(ICallbackHandler handler, HTML_ChangedTitle_t data)
     {
         if (surfaceControl.BrowserHandle == data.unBrowserHandle)
         {

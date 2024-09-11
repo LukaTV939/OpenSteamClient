@@ -7,10 +7,15 @@
 //=============================================================================
 
 using System;
+using System.Text;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Native;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientAppDisableUpdate
 {
-    public unknown_ret SetAppUpdateDisabledSecondsRemaining(AppId_t appId, UInt32 disableLength);  // argc: 2, index: 1, ipc args: [bytes4, bytes4], ipc returns: []
+    public unknown_ret SetAppUpdateDisabledSecondsRemaining(AppId_t appId, uint disableLength);  // argc: 2, index: 1, ipc args: [bytes4, bytes4], ipc returns: []
 }

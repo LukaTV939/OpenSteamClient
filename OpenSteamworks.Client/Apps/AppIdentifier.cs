@@ -1,4 +1,5 @@
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Client.Apps;
 

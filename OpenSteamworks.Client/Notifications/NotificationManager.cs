@@ -3,7 +3,7 @@ using OpenSteamworks.Callbacks.Structs;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Generated;
 
 namespace OpenSteamworks.Client.Notifications;

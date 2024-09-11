@@ -5,17 +5,16 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using OpenSteamworks.Callbacks;
 using OpenSteamworks.ClientInterfaces;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.Native;
 using System.Diagnostics.CodeAnalysis;
-using OpenSteamworks.Native.JIT;
 using OpenSteamworks.Native.Platform;
 using OpenSteamworks.Utils;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Downloads;
 using System.Threading;
-using OpenSteamworks.IPCClient.Interfaces;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks;
 public class SteamClient : ISteamClient
@@ -46,7 +45,6 @@ public class SteamClient : ISteamClient
 
     public ClientApps ClientApps { get; private set; }
     public ClientConfigStore ClientConfigStore { get; private set; }
-    public ClientMessaging ClientMessaging { get; private set; }
     public ClientRemoteStorage ClientRemoteStorage { get; private set; }
     public DownloadManager DownloadManager { get; private set; }
     public CallbackManager CallbackManager { get; private set; }
@@ -139,20 +137,10 @@ public class SteamClient : ISteamClient
         }
     }
 
-// #if !_WINDOWS
-//     /// <summary>
-//     /// Use at your own discretion.
-//     /// This is experimental and may be removed or broken at any time.
-//     /// (And is not implemented correctly)
-//     /// </summary>
-//     public IPCClient.IPCClient IPCClient;
-
-// #endif
-
-    /// <summary>
-    /// Constructs a OpenSteamworks.Client. 
-    /// </summary>
-    public SteamClient(string steamclientLibPath, ConnectionType connectionType, bool enableSpew = false, bool barebones = false)
+	/// <summary>
+	/// Constructs a OpenSteamworks.Client. 
+	/// </summary>
+	public SteamClient(string steamclientLibPath, ConnectionType connectionType, LoggingSettings loggingSettings)
     {
         if (instance != null)
         {
@@ -161,7 +149,7 @@ public class SteamClient : ISteamClient
 
         instance = this;
 
-        warningMessageHook = (int nSeverity, string pchDebugText) =>
+		warningMessageHook = (int nSeverity, string pchDebugText) =>
         {
             Logging.NativeClientLogger.Warning("[CLIENT_API WARN s:" + nSeverity + "] " + pchDebugText);
         };
@@ -169,54 +157,48 @@ public class SteamClient : ISteamClient
         this.steamclientLibPath = steamclientLibPath;
         this.connectionType = connectionType;
 
-        this.CallbackManager = new CallbackManager(this);
+        this.CallbackManager = new CallbackManager(this, loggingSettings.LoggerFactory);
         this.NativeClient = new ClientNative(steamclientLibPath, connectionType);
 
         Logging.GeneralLogger.Info($"Successfully initialized SteamClient library with HSteamPipe={this.NativeClient.Pipe} HSteamUser={this.NativeClient.User} ConnectionType={this.NativeClient.ConnectedWith}");
 
-        if (!barebones) {
-            if (enableSpew)
-            {
-                for (int i = 0; i < (int)ESpewGroup.k_ESpew_ArraySize; i++)
-                {
-                    var e = (ESpewGroup)i;
-                    // These are really noisy and don't provide much value, so don't enable them
-                    if (e == ESpewGroup.Svcm || e == ESpewGroup.Network) {
-                        continue;
-                    }
-                    this.IClientUtils.SetSpew(e, 9, 9);
-                }
-            }
+		if (loggingSettings.EnableSpew)
+		{
+			for (int i = 0; i < (int)ESpewGroup.k_ESpew_ArraySize; i++)
+			{
+				var e = (ESpewGroup)i;
+				// These are really noisy and don't provide much value, so don't enable them
+				if (e == ESpewGroup.Svcm || e == ESpewGroup.Network) {
+					continue;
+				}
+				this.IClientUtils.SetSpew(e, 9, 9);
+			}
+		}
 
-            this.IClientEngine.SetWarningMessageHook(warningMessageHook);
+		this.IClientEngine.SetWarningMessageHook(warningMessageHook);
 
-            // Sets this process as the UI process
-            // Doing this with an existing client causes the windows to disappear, and never reappear (since VGUI support has been dropped)
-            if (this.NativeClient.ConnectedWith == ConnectionType.NewClient)
-            {
-                RunServiceHack();
-                this.IClientUtils.SetLauncherType(ELauncherType.Clientui);
-                this.IClientUtils.SetCurrentUIMode(EUIMode.VGUI);
-                this.IClientUtils.SetClientUIProcess();
-            }
-        }
+		// Sets this process as the UI process
+		// Doing this with an existing client causes the windows to disappear, and never reappear (since VGUI support has been dropped)
+		if (this.NativeClient.ConnectedWith == ConnectionType.NewClient)
+		{
+			RunServiceHack();
+			this.IClientUtils.SetLauncherType(ELauncherType.Clientui);
+			this.IClientUtils.SetCurrentUIMode(EUIMode.VGUI);
+			this.IClientUtils.SetClientUIProcess();
+		}
 
         this.ClientApps = new ClientApps(this);
         this.ClientConfigStore = new ClientConfigStore(this);
-        this.ClientMessaging = new ClientMessaging(this);
         this.ClientRemoteStorage = new ClientRemoteStorage(this);
         this.DownloadManager = new DownloadManager(this);
-        
-        if (!barebones) {
-// #if !_WINDOWS
-//             this.IPCClient = new("Steam3Master", OpenSteamworks.IPCClient.IPCClient.IPCConnectionType.Client);
-//             this.IPCClientShortcuts = new ClientShortcuts(this.IPCClient, (uint)(int)this.NativeClient.User);
-// #endif
-            // Before this, most important callbacks should be registered
-            this.CallbackManager.StartThread();
-        }
-        
-    }
+
+		this.CallbackManager.Start();
+
+		// #if !_WINDOWS
+		//             this.IPCClient = new("Steam3Master", OpenSteamworks.IPCClient.IPCClient.IPCConnectionType.Client);
+		//             this.IPCClientShortcuts = new ClientShortcuts(this.IPCClient, (uint)(int)this.NativeClient.User);
+		// #endif
+	}
 
     /// <summary>
     /// Does trickery to allow running an external steamservice on Linux. Unused on Windows, as it's the default configuration there.
@@ -242,16 +224,21 @@ public class SteamClient : ISteamClient
         }
     }
 
+	public static void ThrowIfRemotePipe() {
+		if (SteamClient.instance != null && SteamClient.IsIPCCrossProcess) {
+			throw new InvalidOperationException("This function cannot be called in cross-process contexts.");
+		}
+	}
+
     public void Shutdown(IProgress<string> progress)
     {
         // Shutdown ClientInterfaces first
-        this.ClientMessaging.Shutdown(progress);
         this.ClientConfigStore.Shutdown(progress);
         this.ClientRemoteStorage.Shutdown(progress);
         this.DownloadManager.Shutdown(progress);
 
         progress.Report("Shutting down native client");
-        this.CallbackManager.RequestStopAndWaitForExit();
+        this.CallbackManager.Dispose();
         this.NativeClient.native_Steam_ReleaseUser(this.NativeClient.Pipe, this.NativeClient.User);
         this.NativeClient.native_Steam_BReleaseSteamPipe(this.NativeClient.Pipe);
         this.IClientEngine.BShutdownIfAllPipesClosed();
@@ -293,7 +280,6 @@ public class SteamClient : ISteamClient
 
     public static ClientApps GetClientApps() => GetInstance().ClientApps;
     public static ClientConfigStore GetClientConfigStore() => GetInstance().ClientConfigStore;
-    public static ClientMessaging GetClientMessaging() => GetInstance().ClientMessaging;
     public static ClientRemoteStorage GetClientRemoteStorage() => GetInstance().ClientRemoteStorage;
     public static DownloadManager GetDownloadManager() => GetInstance().DownloadManager;
     public static CallbackManager GetCallbackManager() => GetInstance().CallbackManager;

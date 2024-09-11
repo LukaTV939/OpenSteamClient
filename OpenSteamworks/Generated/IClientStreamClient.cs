@@ -9,9 +9,11 @@
 using System;
 using OpenSteamworks.Attributes;
 using OpenSteamworks.Protobuf;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientStreamClient
 {
     // WARNING: Arguments are unknown!

@@ -2,10 +2,12 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Utils;
 using Profiler;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Startup;
 
@@ -20,7 +22,7 @@ public class SteamService : IClientLifetime {
     private readonly ISteamClient steamClient;
     private readonly InstallManager installManager;
     private readonly AdvancedConfig advancedConfig;
-    private readonly Logger logger;
+    private readonly ILogger logger;
 
     public SteamService(ISteamClient steamClient, InstallManager installManager, AdvancedConfig advancedConfig) {
         this.logger = Logger.GetLogger("SteamServiceManager", installManager.GetLogPath("SteamServiceManager"));
@@ -84,12 +86,12 @@ public class SteamService : IClientLifetime {
         ShouldStop = true;
     }
 
-    public async Task RunShutdown(IProgress<string> operation) {
+    public async Task RunShutdown(IProgress<OperationProgress> operation) {
         this.StopService();
         await Task.CompletedTask;
     }
 
-    public async Task RunStartup()
+    public async Task RunStartup(IProgress<OperationProgress> operation)
     {
         if (advancedConfig.EnableSteamService) {
             if (steamClient.ConnectedWith == ConnectionType.NewClient) {

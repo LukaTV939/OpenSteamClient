@@ -1,12 +1,15 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
+[Callback(4513)]
 [StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
-public unsafe struct HTML_LinkAtPosition_t
+public struct HTML_LinkAtPosition_t
 {
 	public HHTMLBrowser unBrowserHandle;
 	public UInt32 x;
@@ -14,4 +17,4 @@ public unsafe struct HTML_LinkAtPosition_t
 	public string pchURL;
 	public bool bInput;
 	public bool bLiveLink;
-};
+}

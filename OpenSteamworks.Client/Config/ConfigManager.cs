@@ -3,16 +3,18 @@ using System.Text.Json;
 using OpenSteamworks.Extensions;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Utils;
 using Profiler;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Config;
 
 public class ConfigManager : IClientLifetime, ILogonLifetime {
     private readonly InstallManager installManager;
-    private readonly Container container;
-    private readonly Logger logger;
+    private readonly IContainer container;
+    private readonly ILogger logger;
     private readonly static JsonSerializerOptions jsonOpts = new()
     {
         WriteIndented = true
@@ -24,15 +26,15 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
     private readonly List<Type> registeredConfigs = new();
     public ReadOnlyCollectionEx<Type> RegisteredConfigs => new(registeredConfigs);
 
-    public ConfigManager(Container container, InstallManager installManager) {
+    public ConfigManager(IContainer container, InstallManager installManager) {
         this.installManager = installManager;
         this.container = container;
         this.logger = Logger.GetLogger("ConfigManager", this.installManager.GetLogPath("ConfigManager"));
-        container.RegisterFactoryMethod(() => Get<AdvancedConfig>());
-        container.RegisterFactoryMethod(() => Get<BootstrapperState>());
-        container.RegisterFactoryMethod(() => Get<GlobalSettings>());
-        container.RegisterFactoryMethod(() => Get<LoginUsers>());
-        container.RegisterFactoryMethod(() => Get<UserSettings>());
+        container.RegisterFactoryMethod<AdvancedConfig>(() => Get<AdvancedConfig>());
+        container.RegisterFactoryMethod<BootstrapperState>(() => Get<BootstrapperState>());
+        container.RegisterFactoryMethod<GlobalSettings>(() => Get<GlobalSettings>());
+        container.RegisterFactoryMethod<LoginUsers>(() => Get<LoginUsers>());
+        container.RegisterFactoryMethod<UserSettings>(() => Get<UserSettings>());
         saveAsyncCached = this.GetType().GetMethod(nameof(SaveAsync))!;
     }
 
@@ -154,14 +156,14 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         }
     }
 
-    async Task IClientLifetime.RunStartup()
+    async Task IClientLifetime.RunStartup(IProgress<OperationProgress> progress)
     {
         await Task.CompletedTask;
     }
 
-    async Task IClientLifetime.RunShutdown(IProgress<string> operation)
+    async Task IClientLifetime.RunShutdown(IProgress<OperationProgress> operation)
     {
-        operation.Report("Saving configs");
+        operation.Report(new("Saving configs"));
 
         foreach (var item in loadedConfigs)
         {
@@ -173,14 +175,14 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         await Task.CompletedTask;
     }
 
-    async Task ILogonLifetime.OnLoggedOn(IExtendedProgress<int> progress, LoggedOnEventArgs e)
+    async Task ILogonLifetime.RunLogon(IProgress<OperationProgress> progress)
     {
         await Task.CompletedTask;
     }
 
-    async Task ILogonLifetime.OnLoggingOff(IProgress<string> progress)
+    async Task ILogonLifetime.RunLogoff(IProgress<OperationProgress> progress)
     {
-        progress.Report("Saving user configs");
+        progress.Report(new("Saving user configs"));
         
         foreach (var item in loadedUserConfigs)
         {

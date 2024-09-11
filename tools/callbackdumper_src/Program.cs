@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using OpenSteamworks;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 
 public class Program
 {

@@ -7,10 +7,12 @@
 //=============================================================================
 
 using System;
+using OpenSteamworks.Attributes;
 
 namespace OpenSteamworks.Generated;
 
 // This interface doesn't get dumped. What does it contain?
+[CppInterface]
 public unsafe interface IClientNetworkingSockets
 {
 

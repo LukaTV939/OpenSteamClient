@@ -7,8 +7,8 @@
 //=============================================================================
 
 using System;
-using OpenSteamworks.Structs;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data.Enums;
 using System.Text;
 
 using OpenSteamworks.Protobuf;
@@ -17,9 +17,11 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using OpenSteamworks.Attributes;
 using OpenSteamworks.Callbacks.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientUser
 {
     // WARNING: Do not use this function! Unknown behaviour will occur!
@@ -185,7 +187,7 @@ public unsafe interface IClientUser
     public void Test_FakeConnectionTimeout();  // argc: 0, index: 99, ipc args: [], ipc returns: []
     public bool RunInstallScript(AppId_t appid, string unk, bool uninstall);  // argc: 3, index: 100, ipc args: [bytes4, string, bytes1], ipc returns: [bytes1]
     public AppId_t IsInstallScriptRunning();  // argc: 0, index: 101, ipc args: [], ipc returns: [bytes4]
-    public bool GetInstallScriptState(ref string pchDescription, UInt32 cchDescription, ref UInt32 punNumSteps, ref UInt32 punCurrStep);  // argc: 4, index: 102, ipc args: [bytes4], ipc returns: [bytes1, bytes_length_from_mem, bytes4, bytes4]
+    public bool GetInstallScriptState(StringBuilder pchDescription, UInt32 cchDescription, out UInt32 punNumSteps, out UInt32 punCurrStep);  // argc: 4, index: 102, ipc args: [bytes4], ipc returns: [bytes1, bytes_length_from_mem, bytes4, bytes4]
     public unknown_ret StopInstallScript(AppId_t appid);  // argc: 1, index: 103, ipc args: [bytes4], ipc returns: [bytes1]
     public unknown_ret ResetInstallScript();  // argc: 1, index: 104, ipc args: [bytes4], ipc returns: [bytes1]
     /// <summary>

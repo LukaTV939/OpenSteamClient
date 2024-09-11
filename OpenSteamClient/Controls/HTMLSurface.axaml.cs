@@ -15,7 +15,7 @@ using OpenSteamworks.Generated;
 using static OpenSteamworks.Callbacks.CallbackManager;
 using Avalonia.Threading;
 using Avalonia.Input;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using SkiaSharp;
@@ -35,6 +35,9 @@ using System.IO;
 using OpenSteamworks.Utils;
 using Avalonia.Skia.Helpers;
 using OpenSteamworks.Callbacks;
+using OpenSteamworks.Data;
+using OpenSteamClient.DI;
+
 
 namespace OpenSteamClient.Controls;
 
@@ -295,15 +298,15 @@ public partial class HTMLSurface : UserControl
         this.Focusable = true;
 
         this.surface = client.IClientHTMLSurface;
-        client.CallbackManager.RegisterHandler<HTML_NeedsPaint_t>(this.OnHTML_NeedsPaint);
-        client.CallbackManager.RegisterHandler<HTML_SetCursor_t>(this.OnHTML_SetCursor);
-        client.CallbackManager.RegisterHandler<HTML_ShowToolTip_t>(this.OnHTML_ShowToolTip_t);
-        client.CallbackManager.RegisterHandler<HTML_HideToolTip_t>(this.OnHTML_HideToolTip_t);
+        client.CallbackManager.Register<HTML_NeedsPaint_t>(this.OnHTML_NeedsPaint);
+        client.CallbackManager.Register<HTML_SetCursor_t>(this.OnHTML_SetCursor);
+        client.CallbackManager.Register<HTML_ShowToolTip_t>(this.OnHTML_ShowToolTip_t);
+        client.CallbackManager.Register<HTML_HideToolTip_t>(this.OnHTML_HideToolTip_t);
         // Reactive bloat. No events here, need to do this instead...
         this.GetObservable(BoundsProperty).Subscribe(new AnonymousObserver<Rect>(BoundsChange));
     }
 
-    private void OnHTML_SetCursor(CallbackHandler<HTML_SetCursor_t> handler, HTML_SetCursor_t setCursor)
+    private void OnHTML_SetCursor(ICallbackHandler handler, HTML_SetCursor_t setCursor)
     {
         if (setCursor.unBrowserHandle == BrowserHandle)
         {
@@ -366,7 +369,7 @@ public partial class HTMLSurface : UserControl
 
     Stopwatch paintUpdateDataTime = new();
     Stopwatch forceRedrawTime = new();
-    private void OnHTML_NeedsPaint(CallbackHandler<HTML_NeedsPaint_t> handler, HTML_NeedsPaint_t paintEvent)
+    private void OnHTML_NeedsPaint(ICallbackHandler handler, HTML_NeedsPaint_t paintEvent)
     {
         if (paintEvent.unBrowserHandle == this.BrowserHandle)
         {
@@ -395,7 +398,7 @@ public partial class HTMLSurface : UserControl
     }
     #endif
 
-    private void OnHTML_ShowToolTip_t(CallbackHandler<HTML_ShowToolTip_t> handler, HTML_ShowToolTip_t ev)
+    private void OnHTML_ShowToolTip_t(ICallbackHandler handler, HTML_ShowToolTip_t ev)
     {
         if (ev.unBrowserHandle == this.BrowserHandle)
         {
@@ -407,7 +410,7 @@ public partial class HTMLSurface : UserControl
         }
     }
 
-    private void OnHTML_HideToolTip_t(CallbackHandler<HTML_HideToolTip_t> handler, HTML_HideToolTip_t ev)
+    private void OnHTML_HideToolTip_t(ICallbackHandler handler, HTML_HideToolTip_t ev)
     {
         if (ev.unBrowserHandle == this.BrowserHandle)
         {
@@ -463,21 +466,13 @@ public partial class HTMLSurface : UserControl
         string token;
         if (!this.client.IClientUser.GetCurrentWebAuthToken(sb, (uint)sb.Capacity))
         {
-            await this.client.CallbackManager.PauseThreadAsync();
-
-            var callHandle = this.client.IClientUser.RequestWebAuthToken();
-            if (callHandle == 0)
+			var result = await this.client.CallbackManager.RunAsyncCall(() => this.client.IClientUser.RequestWebAuthToken());
+            if (result.Failed)
             {
-                throw new InvalidOperationException("SetWebAuthToken failed due to no call handle being returned.");
+                throw new InvalidOperationException("SetWebAuthToken failed due to CallResult failure: " + result.FailureReason);
             }
 
-            var result = await callHandle.Wait();
-            if (result.failed)
-            {
-                throw new InvalidOperationException("SetWebAuthToken failed due to CallResult failure: " + result.failureReason);
-            }
-
-            token = result.data.m_rgchToken;
+            token = result.Data.m_rgchToken;
         }
         else
         {
@@ -491,29 +486,20 @@ public partial class HTMLSurface : UserControl
     {
         await GetWebToken();
         await this.htmlHost.Start();
-        await this.client.CallbackManager.PauseThreadAsync();
-        var callHandle = this.surface.CreateBrowser(userAgent, customCSS);
-        if (callHandle == 0)
+		var result = await client.CallbackManager.RunAsyncCall(() => this.surface.CreateBrowser(userAgent, customCSS), new CancellationTokenSource(15000).Token);
+        if (result.Failed)
         {
             this.htmlHost.Stop();
-            throw new InvalidOperationException("CreateBrowser failed due to no call handle being returned.");
+            throw new InvalidOperationException("CreateBrowser failed due to CallResult failure: " + result.FailureReason);
         }
 
-        SpewyLog("Got callhandle " + callHandle);
-        var result = await callHandle.Wait(new CancellationTokenSource(15000).Token);
-        if (result.failed)
-        {
-            this.htmlHost.Stop();
-            throw new InvalidOperationException("CreateBrowser failed due to CallResult failure: " + result.failureReason);
-        }
-
-        this.BrowserHandle = result.data.unBrowserHandle;
+        this.BrowserHandle = result.Data.unBrowserHandle;
 
         SpewyLog("Created new browser with handle " + this.BrowserHandle);
         this.surface.AllowStartRequest(this.BrowserHandle, true);
         this.surface.SetSize(this.BrowserHandle, (uint)this.Bounds.Width, (uint)this.Bounds.Height);
 
-        return result.data.unBrowserHandle;
+        return result.Data.unBrowserHandle;
     }
 
     public void RemoveBrowser()

@@ -11,11 +11,11 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenSteamClient.Extensions;
+using OpenSteamClient.Logging;
 using OpenSteamClient.Views;
 using OpenSteamworks.Client;
 using OpenSteamworks.Client.Apps;
 using OpenSteamworks.Client.Managers;
-using OpenSteamworks.ConCommands;
 
 namespace OpenSteamClient.ViewModels;
 
@@ -24,33 +24,33 @@ public partial class ConsolePageViewModel : AvaloniaCommon.ViewModelBase
     private class LogColorizer : DocumentColorizingTransformer
     {
         // This dictionary doesn't need to be concurrent, but let's keep it concurrent just in case
-        public ConcurrentDictionary<int, Logger.Level> LinesByLevel { get; init; } = new();
+        public ConcurrentDictionary<int, LogLevel> LinesByLevel { get; init; } = new();
 
         protected override void ColorizeLine(DocumentLine line)
         {
-            if (!line.IsDeleted && LinesByLevel.TryGetValue(line.LineNumber, out Logger.Level value)) {
+            if (!line.IsDeleted && LinesByLevel.TryGetValue(line.LineNumber, out LogLevel value)) {
                 ChangeLinePart(line.Offset, line.EndOffset, (vis) => SetColor(vis, value));
             }
         }
 
-        void SetColor(VisualLineElement element, Logger.Level level)
+        void SetColor(VisualLineElement element, LogLevel level)
         {
             IImmutableSolidColorBrush brush;
             switch (level)
             {
-                case Logger.Level.DEBUG:
+                case LogLevel.Debug:
                     brush = Brushes.Gray;
                     break;
 
-                case Logger.Level.WARNING:
+                case LogLevel.Warning:
                     brush = Brushes.Yellow;
                     break;
 
-                case Logger.Level.ERROR:
+                case LogLevel.Error:
                     brush = Brushes.DarkRed;
                     break;
                 
-                case Logger.Level.FATAL:
+                case LogLevel.Fatal:
                     brush = Brushes.Red;
                     break;
 
@@ -82,10 +82,10 @@ public partial class ConsolePageViewModel : AvaloniaCommon.ViewModelBase
     {
         this.page = page;
 
-        foreach (var item in ConCommandHandler.ConCommands)
-        {
-            AutocompleteNames.Add(item.Key);
-        }
+        // foreach (var item in ConCommandHandler.ConCommands)
+        // {
+        //     AutocompleteNames.Add(item.Key);
+        // }
 
         page.LogLines.TextArea.TextView.LineTransformers.Add(colorizer);
         Logger.DataReceived += OnDataReceived;
@@ -116,6 +116,6 @@ public partial class ConsolePageViewModel : AvaloniaCommon.ViewModelBase
     public void SendCommand() {
         var cmd = CurrentCommandText;
         CurrentCommandText = "";
-        ConCommandHandler.ExecuteConsoleCommand(cmd);
+        //ConCommandHandler.ExecuteConsoleCommand(cmd);
     }
 }

@@ -1,3 +1,5 @@
+using OpenSteamClient.Logging;
+
 namespace OpenSteamworks.Client.Utils;
  
 //TODO: remove this entire thing in favor of multiple IProgress instances, as part of the bootstrapper rewrite

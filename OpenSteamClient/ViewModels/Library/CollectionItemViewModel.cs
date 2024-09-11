@@ -6,7 +6,7 @@ using Avalonia.Media.Imaging;
 using OpenSteamClient.ViewModels.Library;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenSteamworks.Client.Apps.Library;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 
 namespace OpenSteamClient.ViewModels.Library;
 

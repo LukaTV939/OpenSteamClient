@@ -13,6 +13,8 @@ using CommunityToolkit.Mvvm.Input;
 using OpenSteamworks.Client.Apps;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Startup;
+using OpenSteamClient.DI;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenSteamClient.ViewModels;
 
@@ -52,7 +54,7 @@ public partial class PageHeaderViewModel : AvaloniaCommon.ViewModelBase
     [ObservableProperty]
     private bool canUse;
 
-    public PageHeaderViewModel(MainWindowViewModel mainWindowViewModel, string name, string locToken, Type pageType, Type viewModelType, bool defaultVisible = true)
+    public PageHeaderViewModel(MainWindowViewModel mainWindowViewModel, string name, string locToken, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type pageType, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type viewModelType, bool defaultVisible = true)
     {
         this.IsVisible = defaultVisible;
         this.PageName = name;
@@ -71,7 +73,7 @@ public partial class PageHeaderViewModel : AvaloniaCommon.ViewModelBase
             return ctrl;
         };
 
-        this.ViewModelCtor = (page) => AvaloniaApp.Container.ConstructOnly(viewModelType, page);
+        this.ViewModelCtor = (page) => AvaloniaApp.Container.Construct(viewModelType, page);
         this.SwitchPageAction = new RelayCommand(() => mainWindowViewModel.SwitchToPage(pageType));
         this.ContextMenuItems.CollectionChanged += (object? sender, NotifyCollectionChangedEventArgs e) =>
         {

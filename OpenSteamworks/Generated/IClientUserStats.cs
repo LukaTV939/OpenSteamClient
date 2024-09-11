@@ -7,10 +7,13 @@
 //=============================================================================
 
 using System;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientUserStats
 {
     public UInt32 GetNumStats(in CGameID nGameID);  // argc: 1, index: 1, ipc args: [bytes8], ipc returns: [bytes4]

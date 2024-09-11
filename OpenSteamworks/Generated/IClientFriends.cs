@@ -8,12 +8,15 @@
 
 using System;
 using System.Text;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Protobuf;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientFriends
 {
     public string GetPersonaName();  // argc: 0, index: 1, ipc args: [], ipc returns: [string]

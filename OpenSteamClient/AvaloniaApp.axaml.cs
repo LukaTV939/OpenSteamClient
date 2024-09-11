@@ -17,14 +17,14 @@ using Avalonia.Controls;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Input;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Utils;
 using Avalonia.Styling;
 using OpenSteamworks.Client.Apps.Library;
 using OpenSteamworks.Generated;
 using System.Text;
 using OpenSteamworks.Client.Login;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using Avalonia.Threading;
 using OpenSteamworks.Client.Friends;
 using OpenSteamClient.UIImpl;
@@ -32,12 +32,14 @@ using OpenSteamworks.Client.Startup;
 using AvaloniaCommon;
 using Profiler;
 using System.Diagnostics;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamworks.Client.DI;
 
 namespace OpenSteamClient;
 
 public class AvaloniaApp : Application
 {
-    public static readonly Container Container;
+    public static readonly IContainer Container;
     public new static AvaloniaApp? Current;
     public static Theme? Theme;
     public new IClassicDesktopStyleApplicationLifetime ApplicationLifetime => (base.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!;
@@ -46,8 +48,10 @@ public class AvaloniaApp : Application
     static AvaloniaApp()
     {
         var installManager = new InstallManager();
-        Container = new Container(installManager);
-    }
+		var loggerFactory = new LoggerFactory(installManager);
+		Container = new Container(installManager, loggerFactory);
+		Container.ConstructAndRegister<LifetimeManager>();
+	}
 
     public override void Initialize()
     {
@@ -57,7 +61,7 @@ public class AvaloniaApp : Application
 
     private static void InvokeOnUIThread(Action callback)
     {
-        if (!Container.IsShuttingDown)
+        if (!Container.Get<LifetimeManager>().IsShuttingDown)
         {
             Avalonia.Threading.Dispatcher.UIThread.Invoke(callback);
         }
@@ -68,14 +72,14 @@ public class AvaloniaApp : Application
         using var scope = CProfiler.CurrentProfiler?.EnterScope("OnFrameworkInitializationCompleted");
         Theme = new Theme(this);
 
-        ExtendedProgress<int> bootstrapperProgress = new ExtendedProgress<int>(0, 100);
-        var progVm = new ProgressWindowViewModel(bootstrapperProgress, "Bootstrapper progress");
+		Progress<OperationProgress> progress = new();
+		var progVm = new ProgressWindowViewModel(progress, "Bootstrapper progress");
         ForceProgressWindow(progVm);
 
-        Container.ConstructAndRegisterImmediate<ConfigManager>();
-        var bootstrapper = Container.ConstructAndRegisterImmediate<Bootstrapper>();
+        Container.ConstructAndRegister<ConfigManager>();
+        var bootstrapper = Container.ConstructAndRegister<Bootstrapper>();
 
-        bootstrapper.SetProgressObject(bootstrapperProgress);
+        bootstrapper.SetProgressObject(progress);
         await bootstrapper.RunBootstrap((title, msg) => RunOnUIThread(DispatcherPriority.Normal, () => MessageBox.Show(title, msg)));
 
         progVm.Title = "Login progress";
@@ -83,7 +87,7 @@ public class AvaloniaApp : Application
         Container.RegisterInstance(new Client(Container));
         Container.ConstructAndRegister<TranslationManager>();
         Container.RegisterInstance(this);
-        await Container.RunClientStartup();
+        await Container.Get<LifetimeManager>().RunClientStartup(progress);
 
         Container.Get<TranslationManager>().SetLanguage(ELanguage.English, false);
 
@@ -114,7 +118,7 @@ public class AvaloniaApp : Application
             InvokeOnUIThread(() =>
             {
                 (this.DataContext as AvaloniaAppViewModel)!.IsLoggedIn = false;
-                if (e.Error != OpenSteamworks.Enums.EResult.OK)
+                if (e.Error != EResult.OK)
                 {
                     // What can cause a sudden log off?
                     MessageBox.Show("Session terminated", "You were forcibly logged off with an error code: " + e.Error.ToString());
@@ -124,7 +128,7 @@ public class AvaloniaApp : Application
         };
 
         // This is kept for the lifetime of the application, which is fine
-        Container.Get<LoginManager>().SetProgress(bootstrapperProgress);
+        Container.Get<LoginManager>().SetProgress(progress);
         Container.Get<LoginManager>().SetExceptionHandler(e => {
             Program.FatalException(e);
         });
@@ -133,7 +137,7 @@ public class AvaloniaApp : Application
         {
             InvokeOnUIThread(() =>
             {
-                this.ForceProgressWindow(new ProgressWindowViewModel(bootstrapperProgress, "Login progress"));
+                this.ForceProgressWindow(new ProgressWindowViewModel(progress, "Login progress"));
             });
         };
 
@@ -141,7 +145,7 @@ public class AvaloniaApp : Application
         {
             InvokeOnUIThread(() =>
             {
-                this.ForceProgressWindow(new ProgressWindowViewModel(bootstrapperProgress, "Logout progress"));
+                this.ForceProgressWindow(new ProgressWindowViewModel(progress, "Logout progress"));
             });
         };
 
@@ -183,7 +187,7 @@ public class AvaloniaApp : Application
     {
         ForceWindow(new AccountPickerWindow
         {
-            DataContext = AvaloniaApp.Container.ConstructOnly<AccountPickerWindowViewModel>()
+            DataContext = AvaloniaApp.Container.Construct<AccountPickerWindowViewModel>()
         });
     }
 
@@ -193,7 +197,7 @@ public class AvaloniaApp : Application
     public void ForceMainWindow()
     {
         var window = ForceWindow(new MainWindow());
-        window.DataContext = AvaloniaApp.Container.ConstructOnly<MainWindowViewModel>((Action)OpenSettingsWindow, window);
+        window.DataContext = AvaloniaApp.Container.Construct<MainWindowViewModel>((Action)OpenSettingsWindow, window);
     }
 
     private SettingsWindow? CurrentSettingsWindow;
@@ -211,7 +215,7 @@ public class AvaloniaApp : Application
         }
 
         CurrentSettingsWindow = new();
-        CurrentSettingsWindow.DataContext = AvaloniaApp.Container.ConstructOnly<SettingsWindowViewModel>(CurrentSettingsWindow);
+        CurrentSettingsWindow.DataContext = AvaloniaApp.Container.Construct<SettingsWindowViewModel>(CurrentSettingsWindow);
 
         CurrentSettingsWindow.Show();
         CurrentSettingsWindow.Closed += (object? sender, EventArgs e) =>
@@ -322,11 +326,11 @@ public class AvaloniaApp : Application
         LoginWindowViewModel vm;
         if (user == null)
         {
-            vm = AvaloniaApp.Container.ConstructOnly<LoginWindowViewModel>();
+            vm = AvaloniaApp.Container.Construct<LoginWindowViewModel>();
         }
         else
         {
-            vm = AvaloniaApp.Container.ConstructOnly<LoginWindowViewModel>(user);
+            vm = AvaloniaApp.Container.Construct<LoginWindowViewModel>(user);
         }
 
         var window = new LoginWindow();
@@ -350,7 +354,7 @@ public class AvaloniaApp : Application
     /// </summary>
     public T ForceWindow<T>(T window) where T : Window
     {
-        if (!Container.IsShuttingDown)
+        if (!Container.Get<LifetimeManager>().IsShuttingDown)
         {
             ApplicationLifetime.MainWindow?.Close();
             ApplicationLifetime.MainWindow = window;
@@ -373,11 +377,10 @@ public class AvaloniaApp : Application
     public async Task Exit(int exitCode = 0)
     {
         using var scope = CProfiler.CurrentProfiler?.EnterScope("AvaloniaApp.Exit");
-        Progress<string> operation = new();
-        Progress<string> subOperation = new();
-        var progVm = new ProgressWindowViewModel(operation, subOperation);
+		Progress<OperationProgress> operation = new();
+		var progVm = new ProgressWindowViewModel(operation);
         ForceProgressWindow(progVm);
-        await Container.RunClientShutdown(operation, subOperation);
+        await Container.Get<LifetimeManager>().RunClientShutdown(operation);
         Console.WriteLine("Shutting down Avalonia");
         // At this point, all the other shutdown tasks should have finished so let's just kill
         Process.GetCurrentProcess().Kill();

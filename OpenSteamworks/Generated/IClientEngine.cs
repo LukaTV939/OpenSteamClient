@@ -1,9 +1,11 @@
 using System;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Native;
-using OpenSteamworks.ConCommands;
+using OpenSteamworks.Attributes;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Runtime.CompilerServices;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
@@ -13,8 +15,9 @@ public delegate void ClientAPI_WarningMessageHook_t(int nSeverity, string pchDeb
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void ClientAPI_PostAPIResultInProcess_t(SteamAPICall_t callHandle, IntPtr callbackData, uint unCallbackSize, int iCallbackNum);
 
-public unsafe interface IClientEngine {
-    public HSteamPipe CreateSteamPipe();
+[CppInterface]
+public interface IClientEngine {
+	public HSteamPipe CreateSteamPipe();
 	public bool BReleaseSteamPipe( HSteamPipe hSteamPipe );
 	public HSteamUser CreateGlobalUser( ref HSteamPipe phSteamPipe );
 	public HSteamUser ConnectToGlobalUser( HSteamPipe hSteamPipe );
@@ -71,7 +74,7 @@ public unsafe interface IClientEngine {
     /// <param name="iCallbackExpected">k_iCallback number that you expected back</param>
     /// <param name="pbFailed">A bool that tells you if the callback failed</param>
     /// <returns>If the callback is finished or not</returns>
-	public bool GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, void* pCallback, int cubCallback, int iCallbackExpected, ref bool pbFailed );
+	public bool GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, IntPtr pCallback, int cubCallback, int iCallbackExpected, ref bool pbFailed );
 	public IClientProductBuilder GetIClientProductBuilder( HSteamUser hSteamUser, HSteamPipe hSteamPipe );
 	public IClientDepotBuilder GetIClientDepotBuilder( HSteamUser hSteamUser, HSteamPipe hSteamPipe );
 	public IClientNetworkDeviceManager GetIClientNetworkDeviceManager( HSteamPipe hSteamPipe );
@@ -80,7 +83,7 @@ public unsafe interface IClientEngine {
 	public IClientSystemDockManager GetIClientSystemDockManager( HSteamPipe hSteamPipe );
 	public IClientSystemAudioManager GetIClientSystemAudioManager( HSteamPipe hSteamPipe );
 	public IClientSystemDisplayManager GetIClientSystemDisplayManager( HSteamPipe hSteamPipe );
-	public void ConCommandInit( IConCommandBaseAccessor* pAccessor );
+	public void ConCommandInit( in IConCommandBaseAccessor pAccessor );
 	public IClientAppManager GetIClientAppManager( HSteamUser hSteamUser, HSteamPipe hSteamPipe );
 	public IClientConfigStore GetIClientConfigStore( HSteamUser hSteamUser, HSteamPipe hSteamPipe );
 	public bool BOverlayNeedsPresent();
@@ -134,7 +137,7 @@ public unsafe interface IClientEngine {
 	/// What is the format of the data here?
 	/// </summary>
 	/// <returns></returns>
-	public void* GetIPCServerMap();
+	public IntPtr GetIPCServerMap();
     public void OnDebugTextArrived(string msg);
 	/// <summary>
 	/// Unsure if this exists

@@ -7,9 +7,12 @@
 //=============================================================================
 
 using System;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientAudio
 {
     public unknown_ret StartVoiceRecording();  // argc: 0, index: 1, ipc args: [], ipc returns: []

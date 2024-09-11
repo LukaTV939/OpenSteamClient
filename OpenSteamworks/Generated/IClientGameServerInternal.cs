@@ -8,12 +8,14 @@
 
 using System;
 using OpenSteamworks.Attributes;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientGameServerInternal
 {
     // WARNING: Do not use this function! Unknown behaviour will occur!

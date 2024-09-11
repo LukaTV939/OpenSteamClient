@@ -8,14 +8,16 @@ using OpenSteamClient.Views.Friends;
 using OpenSteamworks.Client;
 using OpenSteamworks.Client.Friends;
 using OpenSteamworks.Client.Managers;
-using OpenSteamworks.Client.Utils.DI;
-using OpenSteamworks.Enums;
+using OpenSteamClient.DI;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamClient.DI.Attributes;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamClient.UIImpl;
 
-[DIRegisterInterfaceAttribute<IFriendsUI>]
+[DIRegisterInterface<IFriendsUI>]
 public partial class FriendsUI : IFriendsUI
 {
     private readonly FriendsListViewModel friendsListViewModel;

@@ -18,19 +18,23 @@ using OpenSteamworks.Client.Apps.Compat;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.ClientInterfaces;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.KeyValue;
 using OpenSteamworks.KeyValue.ObjectGraph;
 using OpenSteamworks.KeyValue.Deserializers;
 using OpenSteamworks.KeyValue.Serializers;
 using OpenSteamworks.Messaging;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 using static OpenSteamworks.Callbacks.CallbackManager;
 using Profiler;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamworks.Callbacks;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Apps;
 
@@ -50,10 +54,9 @@ public class AppLastPlayedChangedEventArgs : EventArgs {
 public class AppsManager : ILogonLifetime
 {
     private readonly ISteamClient steamClient;
-    private readonly ClientMessaging clientMessaging;
-    private readonly Logger logger;
+    private readonly ILogger logger;
     private readonly InstallManager installManager;
-    private readonly Container container;
+    private readonly IContainer container;
     private CompatManager compatManager => container.Get<CompatManager>();
 
     public readonly ClientApps ClientApps;
@@ -123,18 +126,17 @@ public class AppsManager : ILogonLifetime
         }
     }
 
-    public AppsManager(ISteamClient steamClient, Container container, ClientApps clientApps, ClientMessaging clientMessaging, InstallManager installManager) {
+    public AppsManager(ISteamClient steamClient, IContainer container, ClientApps clientApps, InstallManager installManager) {
         this.logger = Logger.GetLogger("AppsManager", installManager.GetLogPath("AppsManager"));
         this.container = container;
         this.ClientApps = clientApps;
         this.steamClient = steamClient;
-        this.clientMessaging = clientMessaging;
         this.installManager = installManager;
-        steamClient.CallbackManager.RegisterHandler<AppMinutesPlayedDataNotice_t>(OnAppMinutesPlayedDataNotice);
-        steamClient.CallbackManager.RegisterHandler<AppLastPlayedTimeChanged_t>(OnAppLastPlayedTimeChanged);
+        steamClient.CallbackManager.Register<AppMinutesPlayedDataNotice_t>(OnAppMinutesPlayedDataNotice);
+        steamClient.CallbackManager.Register<AppLastPlayedTimeChanged_t>(OnAppLastPlayedTimeChanged);
     }
 
-    public void OnAppMinutesPlayedDataNotice(CallbackHandler<AppMinutesPlayedDataNotice_t> handler, AppMinutesPlayedDataNotice_t notice) {
+    public void OnAppMinutesPlayedDataNotice(ICallbackHandler handler, AppMinutesPlayedDataNotice_t notice) {
         UInt32 allTime = 0;
         UInt32 lastTwoWeeks = 0;
         if (steamClient.IClientUser.BGetAppMinutesPlayed(notice.m_nAppID, ref allTime, ref lastTwoWeeks))
@@ -143,26 +145,24 @@ public class AppsManager : ILogonLifetime
         }
     }
 
-    public void OnAppLastPlayedTimeChanged(CallbackHandler<AppLastPlayedTimeChanged_t> handler, AppLastPlayedTimeChanged_t lastPlayedTimeChanged) {
+    public void OnAppLastPlayedTimeChanged(ICallbackHandler handler, AppLastPlayedTimeChanged_t lastPlayedTimeChanged) {
         AppLastPlayedChanged?.Invoke(this, new AppLastPlayedChangedEventArgs(lastPlayedTimeChanged.m_nAppID, lastPlayedTimeChanged.m_lastPlayed));
     }
 
-    public async Task OnLoggedOn(IExtendedProgress<int> progress, LoggedOnEventArgs e) {
+    public async Task RunLogon(IProgress<OperationProgress> progress) {
         await Task.Run(() =>
         {
             var ownedApps = OwnedAppIDs;
-            progress.SetSubOperation("Loading apps");
-            progress.SetMaxProgress(ownedApps.Count);
             lock (appsLock)
             {
                 for (int i = 0; i < ownedApps.Count; i++)
                 {
+					progress.Report(new("Loading apps", string.Empty, (i / ownedApps.Count) * 100));
                     var item = ownedApps.ElementAt(i);
 
                     try
                     {
                         GetApp(item);
-                        progress.SetProgress(i);
                     }
                     catch (System.Exception e2)
                     {
@@ -329,7 +329,7 @@ public class AppsManager : ILogonLifetime
         return new ShortcutApp(createdAppId);
     }
 
-    public async Task OnLoggingOff(IProgress<string> progress) {
+    public async Task RunLogoff(IProgress<OperationProgress> progress) {
         lock (appsLock)
         {
             appLastPlayedMap.Clear();
@@ -360,20 +360,20 @@ public class AppsManager : ILogonLifetime
     public async Task<HashSet<AppId_t>> GetAppsForSteamID(CSteamID steamid, bool includeSteamPackageGames = false, bool includeFreeGames = true) {
         logger.Debug("Attempting to get owned apps for " + steamid);
         ProtoMsg<Protobuf.CPlayer_GetOwnedGames_Request> request = new("Player.GetOwnedGames#1");
-        request.body.Steamid = steamid;
-        request.body.IncludeAppinfo = false;
-        request.body.IncludeExtendedAppinfo = false;
-        request.body.IncludeFreeSub = includeSteamPackageGames;
-        request.body.IncludePlayedFreeGames = includeFreeGames;
+        request.Body.Steamid = steamid;
+        request.Body.IncludeAppinfo = false;
+        request.Body.IncludeExtendedAppinfo = false;
+        request.Body.IncludeFreeSub = includeSteamPackageGames;
+        request.Body.IncludePlayedFreeGames = includeFreeGames;
 
         ProtoMsg<Protobuf.CPlayer_GetOwnedGames_Response> response;
         HashSet<AppId_t> ownedApps = new();
-        using (var conn = this.clientMessaging.AllocateConnection())
+        using (var conn = SharedConnection.AllocateConnection())
         {
             response = await conn.ProtobufSendMessageAndAwaitResponse<Protobuf.CPlayer_GetOwnedGames_Response, Protobuf.CPlayer_GetOwnedGames_Request>(request);
         }
 
-        foreach (var protoApp in response.body.Games)
+        foreach (var protoApp in response.Body.Games)
         {
             // Why the fuck is the AppID field an int here?????
             ownedApps.Add((uint)protoApp.Appid);
@@ -437,9 +437,15 @@ public class AppsManager : ILogonLifetime
         return await app.Launch(userLaunchOptions, launchOption, launchSource);
     }
     
-    public Logger GetLoggerForApp(AppBase app) {
-        return logger.CreateSubLogger(app.GameID.ToString());
-    }
+    public ILogger GetLoggerForApp(AppBase app) {
+		if (logger is Logger impl) {
+			// Create a sub logger.
+			return impl.CreateSubLogger(app.GameID.ToString());
+		}
+
+		// Can't do it.
+		return logger;
+	}
 
     public UInt64 StartCompatSession(AppId_t appID) => this.steamClient.IClientCompat.StartSession(appID);
 

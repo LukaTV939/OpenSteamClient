@@ -1,12 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
+[Callback(1010056)]
 [StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
-public unsafe struct OpenFriendsDialog_t
+public struct OpenFriendsDialog_t
 {
     public short unk;
-};
+}

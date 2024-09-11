@@ -4,6 +4,7 @@ using OpenSteamworks.KeyValue;
 using OpenSteamworks.KeyValue.ObjectGraph;
 using OpenSteamworks.KeyValue.Deserializers;
 using OpenSteamworks.KeyValue.Serializers;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Client.Apps.Compat;
 

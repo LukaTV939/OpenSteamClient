@@ -21,11 +21,12 @@ using CommunityToolkit.Mvvm.Input;
 using OpenSteamworks.Callbacks;
 using OpenSteamworks.Callbacks.Structs;
 using OpenSteamworks.Client.Apps;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 using SkiaSharp;
 using AvaloniaCommon;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.ViewModels.Library;
 
@@ -93,8 +94,8 @@ public partial class FocusedAppPaneViewModel : AvaloniaCommon.ViewModelBase
 
         LogoAsText = "";
         app = AvaloniaApp.Container.Get<AppsManager>().GetApp(gameid);
-        AvaloniaApp.Container.Get<CallbackManager>().RegisterHandler<AppEventStateChange_t>(OnAppEventStateChange);
-        AvaloniaApp.Container.Get<CallbackManager>().RegisterHandler<AppLaunchResult_t>(OnAppLaunchResult);
+        AvaloniaApp.Container.Get<CallbackManager>().Register<AppEventStateChange_t>(OnAppEventStateChange);
+        AvaloniaApp.Container.Get<CallbackManager>().Register<AppLaunchResult_t>(OnAppLaunchResult);
         this.Name = app.Name;
         this.heroContainer.GetObservable(Visual.BoundsProperty).Subscribe(new AnonymousObserver<Rect>(OnHeroBoundsChanged));
         SetLibraryAssets();
@@ -105,7 +106,7 @@ public partial class FocusedAppPaneViewModel : AvaloniaCommon.ViewModelBase
         UpdatePlayButton(app.State);
     }
 
-    private void OnAppLaunchResult(CallbackManager.CallbackHandler<AppLaunchResult_t> handler, AppLaunchResult_t t)
+    private void OnAppLaunchResult(ICallbackHandler handler, AppLaunchResult_t t)
     {
         if (t.m_eAppError != EAppError.NoError) {
             MessageBox.Show("Launch failed", $"Launch failed with EResult: {t.m_eAppError}");
@@ -114,7 +115,7 @@ public partial class FocusedAppPaneViewModel : AvaloniaCommon.ViewModelBase
         }
     }
 
-    private void OnAppEventStateChange(CallbackManager.CallbackHandler<AppEventStateChange_t> handler, AppEventStateChange_t change)
+    private void OnAppEventStateChange(ICallbackHandler handler, AppEventStateChange_t change)
     {
         UpdatePlayButton(change.m_eNewState);
     }
@@ -271,7 +272,7 @@ public partial class FocusedAppPaneViewModel : AvaloniaCommon.ViewModelBase
     private void RequestInstall() {
         UtilityFunctions.Assert(app is SteamApp);
         SelectInstallDirectoryDialog dialog = new();
-        dialog.DataContext = AvaloniaApp.Container.ConstructOnly<SelectInstallDirectoryDialogViewModel>(dialog, (app as SteamApp)!);
+        dialog.DataContext = AvaloniaApp.Container.Construct<SelectInstallDirectoryDialogViewModel>(dialog, (app as SteamApp)!);
 
         AvaloniaApp.Current?.TryShowDialog(dialog);
     }

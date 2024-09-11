@@ -1,12 +1,14 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using OpenSteamworks.Client.Managers;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.Client.Config;
 using System.Text;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Utils;
 using Profiler;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Startup;
 
@@ -19,7 +21,7 @@ public class SteamHTML : IClientLifetime
     private readonly ISteamClient steamClient;
     private readonly InstallManager installManager;
     private readonly GlobalSettings globalSettings;
-    private readonly Logger logger;
+    private readonly ILogger logger;
     private bool hasCopiedFiles = false;
     private static RefCount initCount = new();
 
@@ -252,13 +254,13 @@ public class SteamHTML : IClientLifetime
         }
     }
 
-    public async Task RunShutdown(IProgress<string> operation)
+    public async Task RunShutdown(IProgress<OperationProgress> operation)
     {
         ShouldStop = true;
         await Task.CompletedTask;
     }
 
-    public async Task RunStartup()
+    public async Task RunStartup(IProgress<OperationProgress> operation)
     {
         if (CanRun() && globalSettings.WebhelperAlwaysOn)
         {

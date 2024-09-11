@@ -1,12 +1,15 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
+[Callback(4502)]
 [StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
-public unsafe struct HTML_NeedsPaint_t
+public struct HTML_NeedsPaint_t
 {
 	public HHTMLBrowser unBrowserHandle;
 	public IntPtr pBGRA;
@@ -20,4 +23,4 @@ public unsafe struct HTML_NeedsPaint_t
 	public UInt32 unScrollY;
 	public float flPageScale;
 	public UInt32 unPageSerial;
-};
+}

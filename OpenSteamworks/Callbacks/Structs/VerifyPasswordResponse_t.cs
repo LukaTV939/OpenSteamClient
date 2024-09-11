@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct VerifyPasswordResponse_t
+[Callback(1020040)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct VerifyPasswordResponse_t
 {
 	public EResult m_EResult;
-};
+}

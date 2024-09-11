@@ -9,7 +9,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Login;
 using OpenSteamworks.Client.Managers;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using QRCoder;
 

@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using OpenSteamClient.Controls;
 using Avalonia.Media.Imaging;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Client.Apps;
 
 namespace OpenSteamClient.Views.Library;

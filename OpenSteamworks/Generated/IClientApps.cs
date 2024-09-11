@@ -9,11 +9,13 @@
 using System;
 using System.Text;
 using OpenSteamworks.Attributes;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientApps
 {
     public int GetAppData(AppId_t unAppID, string pchKey, StringBuilder pchValue, int cchValueMax);  // argc: 4, index: 1, ipc args: [bytes4, string, bytes4], ipc returns: [bytes4, bytes_length_from_reg]

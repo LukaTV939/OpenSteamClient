@@ -1,6 +1,6 @@
 using OpenSteamworks.Client.CommonEventArgs;
 using OpenSteamworks.ClientInterfaces;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Messaging;
 using OpenSteamworks.Protobuf;
 
@@ -27,13 +27,12 @@ internal class LoginPoll {
     public event RefreshTokenGeneratedHandler? RefreshTokenGenerated;
 
     private readonly ProtoMsg<CAuthentication_PollAuthSessionStatus_Request> pollMsg;
-    private ClientMessaging clientMessaging;
     public bool IsPolling { get; private set; }
     public Task? PollThread { get; private set; }
     public float Interval { get; private set; }
     public ulong ClientID {
         get {
-            return pollMsg.body.ClientId;
+            return pollMsg.Body.ClientId;
         }
     }
     /// <summary>
@@ -42,37 +41,36 @@ internal class LoginPoll {
     /// <param name="clientID">The ClientID to use</param>
     /// <param name="requestId">The RequestID to use</param>
     /// <param name="interval">Interval in seconds (5.1s)</param>
-    internal LoginPoll(ClientMessaging clientMessaging, ulong clientID, Google.Protobuf.ByteString requestId, float interval) {
-        this.clientMessaging = clientMessaging;
+    internal LoginPoll(ulong clientID, Google.Protobuf.ByteString requestId, float interval) {
         pollMsg = new("Authentication.PollAuthSessionStatus#1", true);
-        pollMsg.body.ClientId = clientID;
-        pollMsg.body.RequestId = requestId;
+        pollMsg.Body.ClientId = clientID;
+        pollMsg.Body.RequestId = requestId;
         this.Interval = interval;
     }
 
     private async void PollMain() {
-        using (var conn = this.clientMessaging.AllocateConnection())
+        using (var conn = SharedConnection.AllocateConnection())
         {
             while (IsPolling)
             {
                 ProtoMsg<CAuthentication_PollAuthSessionStatus_Response> pollResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_PollAuthSessionStatus_Response, CAuthentication_PollAuthSessionStatus_Request>(pollMsg);
                 
-                if (pollResp.body.HasNewClientId) {
-                    pollMsg.body.ClientId = pollResp.body.NewClientId;
+                if (pollResp.Body.HasNewClientId) {
+                    pollMsg.Body.ClientId = pollResp.Body.NewClientId;
                 }
 
-                if (pollResp.body.HasNewChallengeUrl) {
-                    ChallengeUrlGenerated?.Invoke(this, new ChallengeUrlGeneratedEventArgs(pollResp.body.NewChallengeUrl));
+                if (pollResp.Body.HasNewChallengeUrl) {
+                    ChallengeUrlGenerated?.Invoke(this, new ChallengeUrlGeneratedEventArgs(pollResp.Body.NewChallengeUrl));
                 }
 
-                if (pollResp.body.HasRefreshToken) {
+                if (pollResp.Body.HasRefreshToken) {
                     IsPolling = false;
-                    RefreshTokenGenerated?.Invoke(this, new TokenGeneratedEventArgs(pollResp.body.RefreshToken, pollResp.body.AccountName));
+                    RefreshTokenGenerated?.Invoke(this, new TokenGeneratedEventArgs(pollResp.Body.RefreshToken, pollResp.Body.AccountName));
                 }
 
-                if (pollResp.header.Eresult != (int)EResult.OK) {
+                if (pollResp.Header.Eresult != (int)EResult.OK) {
                     IsPolling = false;
-                    Error?.Invoke(this, new EResultEventArgs((EResult)pollResp.header.Eresult));
+                    Error?.Invoke(this, new EResultEventArgs((EResult)pollResp.Header.Eresult));
                 }
 
                 // The Interval we get is in seconds (in format 5.1s).

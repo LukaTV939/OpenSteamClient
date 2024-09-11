@@ -15,6 +15,7 @@ using OpenSteamworks.Attributes;
 using OpenSteamworks.Client;
 using OpenSteamworks.Client.Utils;
 using OpenSteamworks.Utils;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.Views;
 
@@ -111,13 +112,6 @@ public partial class InterfaceDebugger : Window
             {
                 bool isStruct = false;
                 Type pierceType = paramInfo.ParameterType.IsByRef ? paramInfo.ParameterType.GetElementType()! : paramInfo.ParameterType;
-                bool isCustomValueType = pierceType.GetCustomAttribute<CustomValueTypeAttribute>() != null;
-                Type? customValueType = null;
-
-                if (isCustomValueType)
-                {
-                    customValueType = UtilityFunctions.AssertNotNull(pierceType.GetField("_value", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)).FieldType;
-                }
 
                 if (string.IsNullOrEmpty(paramCurrentText))
                 {
@@ -148,14 +142,7 @@ public partial class InterfaceDebugger : Window
                     continue;
                 }
 
-                if (isCustomValueType)
-                {
-                    // Custom value type, convert to int and then run implicit operator
-                    paramArr[i] = UtilityFunctions.AssertNotNull(pierceType.GetMethod("op_Implicit", new[] { customValueType! })).Invoke(null, new[] { Convert.ChangeType(paramCurrentText, customValueType!) });
-                    continue;
-                }
-
-                if (isStruct && !isCustomValueType)
+                if (isStruct)
                 {
                     // This is a struct, find InterfaceDebuggerSupport and run it
                     MethodInfo? ci;

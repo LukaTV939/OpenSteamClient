@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 
 namespace OpenSteamworks.ClientInterfaces;

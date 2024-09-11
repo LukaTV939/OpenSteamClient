@@ -6,7 +6,7 @@ using OpenSteamworks.Client.Apps.Assets;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
+using OpenSteamClient.DI;
 using OpenSteamworks.ClientInterfaces;
 using OpenSteamworks.KeyValue;
 using OpenSteamworks.KeyValue.ObjectGraph;
@@ -14,7 +14,10 @@ using OpenSteamworks.KeyValue.Deserializers;
 using OpenSteamworks.KeyValue.Serializers;
 using OpenSteamworks.Utils;
 using Profiler;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Apps.Library;
 
@@ -29,7 +32,6 @@ public class LibraryManager : ILogonLifetime
     
     private readonly CloudConfigStore cloudConfigStore;
     private readonly ISteamClient steamClient;
-    private readonly ClientMessaging clientMessaging;
     internal Logger Logger { get; }
     private readonly InstallManager installManager;
     private readonly LoginManager loginManager;
@@ -47,20 +49,19 @@ public class LibraryManager : ILogonLifetime
     public string LibraryAssetsPath { get; private set; }
     
 
-    public LibraryManager(ISteamClient steamClient, CloudConfigStore cloudConfigStore, ClientMessaging clientMessaging, LoginManager loginManager, InstallManager installManager, AppsManager appsManager) {
+    public LibraryManager(ISteamClient steamClient, CloudConfigStore cloudConfigStore, LoginManager loginManager, InstallManager installManager, AppsManager appsManager) {
         this.Logger = Logger.GetLogger("LibraryManager", installManager.GetLogPath("LibraryManager"));
         this.installManager = installManager;
         this.steamClient = steamClient;
         this.loginManager = loginManager;
         this.cloudConfigStore = cloudConfigStore;
-        this.clientMessaging = clientMessaging;
         this.appsManager = appsManager;
 
         this.LibraryAssetsPath = Path.Combine(this.installManager.CacheDir, "librarycache");
         Directory.CreateDirectory(this.LibraryAssetsPath);
     }
 
-    public async Task OnLoggedOn(IExtendedProgress<int> progress, LoggedOnEventArgs e) {
+    public async Task RunLogon(IProgress<OperationProgress> progress) {
         Library library = new(this, steamClient, cloudConfigStore, loginManager, appsManager, installManager);
         HashSet<CGameID> allUserAppIDs = await library.InitializeLibrary();
         await appsManager.ClientApps.UpdateAppInfo(allUserAppIDs.Where(a => a.IsSteamApp()).Select(a => a.AppID).ToArray());
@@ -106,7 +107,7 @@ public class LibraryManager : ILogonLifetime
             WriteConcurrentAssetDict();
 
             if (appsToGenerate.Any()) {
-                LibraryAssetsGenerator generator = new(installManager, steamClient, clientMessaging, appsToGenerate.ToList(), LibraryAssetToFilename);
+                LibraryAssetsGenerator generator = new(installManager, steamClient, appsToGenerate.ToList(), LibraryAssetToFilename);
                 var expectedApps = appsToGenerate.Select(r => r.AppID);
                 var generatedApps = await generator.Generate();
                 foreach (var item in expectedApps)
@@ -499,9 +500,9 @@ public class LibraryManager : ILogonLifetime
         return currentUserLibrary;
     }
 
-    public async Task OnLoggingOff(IProgress<string> progress) {
+    public async Task RunLogoff(IProgress<OperationProgress> progress) {
         if (currentUserLibrary != null) {
-            progress.Report("Syncing library changes");
+            progress.Report(new("Syncing library changes"));
             await currentUserLibrary.SaveLibrary();
             currentUserLibrary = null;
         }

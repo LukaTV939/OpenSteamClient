@@ -1,11 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct ShortcutChanged_t
+[Callback(1130001)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct ShortcutChanged_t
 {
 	public AppId_t m_nAppID;
     public bool m_bRemote;
-};
+}

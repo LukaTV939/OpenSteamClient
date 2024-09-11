@@ -9,13 +9,15 @@
 using System;
 using System.Runtime.InteropServices;
 using OpenSteamworks.Attributes;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Protobuf;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientRemoteStorage
 {
     // WARNING: Arguments are unknown!

@@ -7,7 +7,9 @@ using OpenSteamworks.Client.Enums;
 using OpenSteamworks.Client.Utils;
 using OpenSteamworks.ClientInterfaces;
 using OpenSteamworks.Downloads;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.ViewModels.Downloads;
 

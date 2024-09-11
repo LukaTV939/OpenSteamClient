@@ -1,5 +1,6 @@
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Client.Config.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Client.Config;
 

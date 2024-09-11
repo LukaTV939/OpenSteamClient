@@ -5,12 +5,14 @@ using System.Text.Json.Nodes;
 using OpenSteamworks.Client.Apps.Library;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.ClientInterfaces;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.Messaging;
 using OpenSteamworks.Protobuf;
 using OpenSteamworks.Utils;
 using SkiaSharp;
+using OpenSteamworks.Data;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Apps.Assets;
 
@@ -33,32 +35,30 @@ public class LibraryAssetsGenerator {
 
     private readonly List<GenerateAssetRequest> assetRequests;
     private readonly Func<AppId_t, LibraryManager.ELibraryAssetType, string> getPathFunc;
-    private readonly ClientMessaging clientMessaging;
     private readonly ISteamClient steamClient;
-    private readonly Logger logger;
+    private readonly ILogger logger;
 
-    public LibraryAssetsGenerator(InstallManager installManager, ISteamClient steamClient, ClientMessaging clientMessaging, List<GenerateAssetRequest> assetRequests, Func<AppId_t, LibraryManager.ELibraryAssetType, string> getPathFunc) {
+    public LibraryAssetsGenerator(InstallManager installManager, ISteamClient steamClient, List<GenerateAssetRequest> assetRequests, Func<AppId_t, LibraryManager.ELibraryAssetType, string> getPathFunc) {
         this.logger = Logger.GetLogger("LibraryAssetsGenerator", installManager.GetLogPath("LibraryAssetsGenerator"));
         this.steamClient = steamClient;
-        this.clientMessaging = clientMessaging;
         this.assetRequests = assetRequests;
         this.getPathFunc = getPathFunc;
     }
     
     public async Task<List<AppId_t>> Generate() {
         List<AppId_t> successfulAppIds = new();
-        using (var conn = clientMessaging.AllocateConnection())
+        using (var conn = SharedConnection.AllocateConnection())
         {
             ProtoMsg<CStoreBrowse_GetItems_Request> msg = new("StoreBrowse.GetItems#1");
             foreach (var item in assetRequests)
             {
-                msg.body.Ids.Add(new StoreItemID() { Appid = item.AppID });
+                msg.Body.Ids.Add(new StoreItemID() { Appid = item.AppID });
             }
             
             StringBuilder builder = new(128);
             this.steamClient.IClientUser.GetLanguage(builder, 128);
 
-            msg.body.DataRequest = new() { 
+            msg.Body.DataRequest = new() { 
                 IncludeAssets = true, 
                 IncludeScreenshots = true, 
                 IncludeAllPurchaseOptions = false, 
@@ -75,10 +75,10 @@ public class LibraryAssetsGenerator {
                 IncludeTrailers = false 
             };
 
-            msg.body.Context = new() { CountryCode = steamClient.IClientUser.GetUserCountry(), SteamRealm = (int)steamClient.IClientUtils.GetSteamRealm(), Elanguage = (int)ELanguageConversion.ELanguageFromAPIName(builder.ToString()), Language = builder.ToString() };
+            msg.Body.Context = new() { CountryCode = steamClient.IClientUser.GetUserCountry(), SteamRealm = (int)steamClient.IClientUtils.GetSteamRealm(), Elanguage = (int)ELanguageConversion.ELanguageFromAPIName(builder.ToString()), Language = builder.ToString() };
             var resp = await conn.ProtobufSendMessageAndAwaitResponse<CStoreBrowse_GetItems_Response, CStoreBrowse_GetItems_Request>(msg);
             
-            foreach (var item in resp.body.StoreItems)
+            foreach (var item in resp.Body.StoreItems)
             {
                 if (item == null) {
                     continue;

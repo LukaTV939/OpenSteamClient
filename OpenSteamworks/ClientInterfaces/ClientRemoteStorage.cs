@@ -3,8 +3,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenSteamworks.Callbacks;
 using OpenSteamworks.Callbacks.Structs;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
+using OpenSteamClient.Logging;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.ClientInterfaces;
 
@@ -19,12 +21,12 @@ public class ClientRemoteStorage {
 
     public async Task<EResult> LoadLocalFileInfoCache(AppId_t appid) {
         TaskCompletionSource<EResult> tcs = new();
-        callbackManager.RegisterHandler<RemoteStorageAppInfoLoaded_t>((CallbackManager.CallbackHandler<RemoteStorageAppInfoLoaded_t> handler, RemoteStorageAppInfoLoaded_t data) =>
+        callbackManager.Register<RemoteStorageAppInfoLoaded_t>((ICallbackHandler handler, RemoteStorageAppInfoLoaded_t data) =>
         {
             if (data.m_nAppID == appid) {
                 tcs.SetResult(data.m_eResult);
-                callbackManager.DeregisterHandler(handler);
-            }
+				handler.Dispose();
+			}
         });
         
         remoteStorage.LoadLocalFileInfoCache(appid);
@@ -40,17 +42,17 @@ public class ClientRemoteStorage {
             return EResult.FeatureDisabled;
         }
 
-        var remoteStorageAppInfoLoaded = callbackManager.AsTask<RemoteStorageAppInfoLoaded_t>();
+        var remoteStorageAppInfoLoaded = callbackManager.WaitAsync<RemoteStorageAppInfoLoaded_t>();
         this.remoteStorage.LoadLocalFileInfoCache(appid);
         await remoteStorageAppInfoLoaded;
 
         TaskCompletionSource<EResult> tcs = new();
-        callbackManager.RegisterHandler((CallbackManager.CallbackHandler<RemoteStorageAppSyncedClient_t> handler, RemoteStorageAppSyncedClient_t data) =>
+        callbackManager.Register((ICallbackHandler handler, RemoteStorageAppSyncedClient_t data) =>
         {
             if (data.appid == appid) {
                 tcs.SetResult(data.result);
-                callbackManager.DeregisterHandler(handler);
-            }
+				handler.Dispose();
+			}
         });
 
         if (!remoteStorage.SynchronizeApp(appid, type, flags)) {

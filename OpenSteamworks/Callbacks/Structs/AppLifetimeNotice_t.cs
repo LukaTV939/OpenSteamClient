@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct AppLifetimeNotice_t
+[Callback(1020030)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct AppLifetimeNotice_t
 {
     // Hmm, this causes problems for 64-bit pids...
 	public UInt32 pidOfGame;
@@ -19,4 +21,4 @@ public unsafe struct AppLifetimeNotice_t
     public UInt16 unk6;
     
 	public bool m_bExiting;
-};
+}

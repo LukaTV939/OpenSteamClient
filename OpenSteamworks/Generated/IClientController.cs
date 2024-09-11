@@ -7,14 +7,13 @@
 //=============================================================================
 
 using System;
+using OpenSteamworks.Attributes;
 
 namespace OpenSteamworks.Generated;
 
 // This interface doesn't get dumped. What does it contain?
+[CppInterface]
 public unsafe interface IClientController
 {
-    public void unk1();
-    public void unk2();
-    public void unk3();
-    public void RunCallbacks();
+    
 }

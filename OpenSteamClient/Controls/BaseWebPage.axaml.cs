@@ -14,6 +14,7 @@ using OpenSteamworks.Callbacks;
 using OpenSteamworks.Callbacks.Structs;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.Controls;
 
@@ -141,7 +142,7 @@ public partial class BaseWebPage : BasePage
         this.DetachedFromVisualTree += BaseWebPage_DetachedFromVisualTree;
     }
 
-    private void OnHTML_CanGoBackAndForward_t(CallbackManager.CallbackHandler<HTML_CanGoBackAndForward_t> handler, HTML_CanGoBackAndForward_t data)
+    private void OnHTML_CanGoBackAndForward_t(ICallbackHandler handler, HTML_CanGoBackAndForward_t data)
     {
         if (this.webviewControl != null && this.webviewControl.BrowserHandle == data.unBrowserHandle)
         {
@@ -153,7 +154,7 @@ public partial class BaseWebPage : BasePage
         }
     }
 
-    private void OnHTML_URLChanged_t(CallbackManager.CallbackHandler<HTML_URLChanged_t> handler, HTML_URLChanged_t data)
+    private void OnHTML_URLChanged_t(ICallbackHandler handler, HTML_URLChanged_t data)
     {
         if (this.webviewControl != null && this.webviewControl.BrowserHandle == data.unBrowserHandle)
         {
@@ -184,8 +185,8 @@ public partial class BaseWebPage : BasePage
         this.openDevToolsButton.Command = new RelayCommand(this.webviewControl.OpenDevTools);
 
         var callbackManager = AvaloniaApp.Container.Get<CallbackManager>();
-        callbackManager.RegisterHandler<HTML_CanGoBackAndForward_t>(OnHTML_CanGoBackAndForward_t);
-        callbackManager.RegisterHandler<HTML_URLChanged_t>(OnHTML_URLChanged_t);
+        callbackManager.Register<HTML_CanGoBackAndForward_t>(OnHTML_CanGoBackAndForward_t);
+        callbackManager.Register<HTML_URLChanged_t>(OnHTML_URLChanged_t);
 
         await this.webviewControl.CreateBrowserAsync(this.UserAgent, this.CustomCSS);
 

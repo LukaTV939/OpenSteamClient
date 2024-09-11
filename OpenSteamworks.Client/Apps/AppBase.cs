@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
+using OpenSteamClient.DI;
 using OpenSteamworks.ClientInterfaces;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Client.Apps;
 

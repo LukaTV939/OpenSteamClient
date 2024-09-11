@@ -1,9 +1,11 @@
 using System.Runtime.InteropServices;
+using OpenSteamworks.Attributes;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct DeviceAuthChanged_t
+[Callback(1080007)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct DeviceAuthChanged_t
 {
     
-};
+}

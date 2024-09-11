@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading;
 using OpenSteamworks.Callbacks;
 using OpenSteamworks.Callbacks.Structs;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamClient.Logging;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Downloads;
 
@@ -54,16 +56,16 @@ public class DownloadManager
     public DownloadManager(ISteamClient steamClient)
     {
         this.steamClient = steamClient;
-        steamClient.CallbackManager.RegisterHandler<DownloadScheduleChanged_t>(OnDownloadScheduleChanged);
-        steamClient.CallbackManager.RegisterHandler<DownloadingAppChanged_t>(OnDownloadingAppChanged);
-        steamClient.CallbackManager.RegisterHandler<AppEventStateChange_t>(OnAppEventStateChange);
-        steamClient.CallbackManager.RegisterHandler<PostLogonState_t>(OnPostLogonState);
+        steamClient.CallbackManager.Register<DownloadScheduleChanged_t>(OnDownloadScheduleChanged);
+        steamClient.CallbackManager.Register<DownloadingAppChanged_t>(OnDownloadingAppChanged);
+        steamClient.CallbackManager.Register<AppEventStateChange_t>(OnAppEventStateChange);
+        steamClient.CallbackManager.Register<PostLogonState_t>(OnPostLogonState);
         downloadInfoUpdateThread = new Thread(DownloadInfoUpdate);
         downloadInfoUpdateThread.Start();
     }
 
     private bool isListeningForAppEventStateChanges = false;
-    private void OnPostLogonState(CallbackManager.CallbackHandler<PostLogonState_t> handler, PostLogonState_t t)
+    private void OnPostLogonState(ICallbackHandler handler, PostLogonState_t t)
     {
         if (t.connectedToCMs == 1 && t.hasAppInfo == 1) {
             isListeningForAppEventStateChanges = true;
@@ -71,7 +73,7 @@ public class DownloadManager
         }   
     }
 
-    private void OnAppEventStateChange(CallbackManager.CallbackHandler<AppEventStateChange_t> handler, AppEventStateChange_t t)
+    private void OnAppEventStateChange(ICallbackHandler handler, AppEventStateChange_t t)
     {
         if (!isListeningForAppEventStateChanges) {
             return;
@@ -81,7 +83,7 @@ public class DownloadManager
         UpdateDownloadQueue([t.m_nAppID]);
     }
 
-    private void OnDownloadingAppChanged(CallbackManager.CallbackHandler<DownloadingAppChanged_t> handler, DownloadingAppChanged_t t)
+    private void OnDownloadingAppChanged(ICallbackHandler handler, DownloadingAppChanged_t t)
     {
         UpdateDownloadQueue();
     }
@@ -170,7 +172,7 @@ public class DownloadManager
         DownloadsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnDownloadScheduleChanged(CallbackManager.CallbackHandler<DownloadScheduleChanged_t> handler, DownloadScheduleChanged_t data)
+    private void OnDownloadScheduleChanged(ICallbackHandler handler, DownloadScheduleChanged_t data)
     {
         UpdateDownloadQueue(data.m_rgunAppSchedule[0..data.m_nTotalAppsScheduled]);
     }

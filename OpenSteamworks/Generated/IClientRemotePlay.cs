@@ -7,11 +7,14 @@
 //=============================================================================
 
 using System;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientRemotePlay
 {
     public int GetSessionCount();  // argc: 0, index: 1, ipc args: [], ipc returns: [bytes4]

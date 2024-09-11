@@ -4,11 +4,12 @@ using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Enums;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Enums;
-
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 using Profiler;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Apps.Library;
 
@@ -25,7 +26,7 @@ public class Library
     private readonly AppsManager appsManager;
     private readonly LoginManager loginManager;
     private readonly InstallManager installManager;
-    private readonly Logger logger;
+    private readonly ILogger logger;
     private readonly LibraryManager libraryManager;
 
     public event EventHandler? LibraryUpdated;

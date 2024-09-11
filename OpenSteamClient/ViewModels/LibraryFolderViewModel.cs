@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenSteamworks.ClientInterfaces;
 using OpenSteamworks.Generated;
+using OpenSteamworks.Data;
 
 namespace OpenSteamClient.ViewModels;
 

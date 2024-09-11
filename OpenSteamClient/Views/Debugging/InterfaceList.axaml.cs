@@ -20,11 +20,9 @@ public partial class InterfaceList : Window
         UtilityFunctions.AssertNotNull(stackpanel2);
         stackpanel = stackpanel2;
 
-        var jit = GetAssemblyByName("OpenSteamworksJIT");
         var osw = GetAssemblyByName("OpenSteamworks");
 
         UtilityFunctions.AssertNotNull(osw);
-        UtilityFunctions.AssertNotNull(jit);
 
         var validInterfaces = osw.GetTypes().Where(type => (type.Name.StartsWith("IClient") || type.Name.StartsWith("ISteam")) && type.IsInterface && type != typeof(ISteamClient));
         List<Button> buttons = new();

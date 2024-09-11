@@ -9,15 +9,16 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenSteamworks.Callbacks;
 using OpenSteamworks.Callbacks.Structs;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.KeyValue;
 using OpenSteamworks.KeyValue.ObjectGraph;
 using OpenSteamworks.KeyValue.Deserializers;
 using OpenSteamworks.KeyValue.Serializers;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 using Profiler;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.ClientInterfaces;
 
@@ -182,7 +183,7 @@ public class ClientApps {
             return;
         } 
 
-        var task = this.callbackManager.AsTask<AppInfoUpdateComplete_t>();
+        var task = this.callbackManager.WaitAsync<AppInfoUpdateComplete_t>();
         var arr = apps.Select(a => (uint)a).ToArray();
         if (this.NativeClientApps.RequestAppInfoUpdate(arr, arr.Length)) {
             await task;

@@ -19,7 +19,7 @@
     <StackPanel>
         <TextBlock Text="{Binding Operation}" />
         <TextBlock Text="{Binding SubOperation}" />
-        <ProgressBar IsIndeterminate="{Binding Throbber}" Minimum="{Binding InitialProgress}" Value="{Binding Progress}" Maximum="{Binding MaxProgress}" />
+        <ProgressBar IsIndeterminate="{Binding Throbber}" Minimum="0" Value="{Binding Progress}" Maximum="100" />
     </StackPanel>
     
 </Window>

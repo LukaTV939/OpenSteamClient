@@ -7,9 +7,12 @@
 //=============================================================================
 
 using System;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientGameServerPacketHandler
 {
     // WARNING: Arguments are unknown!

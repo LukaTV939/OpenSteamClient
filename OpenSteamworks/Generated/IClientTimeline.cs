@@ -8,12 +8,14 @@
 //=============================================================================
 
 using System;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Attributes;
 
 namespace OpenSteamworks.Generated;
 
-// Note: These simply post callbacks for the UI to use. steamclient.so does not include clipping functionality, it is up to the UI to do so.
+// Note: These simply post callbacks for the UI to use. steamclient.so does not include clipping functionality, it is up to the UI layer to do so.
+[CppInterface]
 public unsafe interface IClientTimeline
 {
     public unknown_ret SetTimelineTooltip();  // argc: 2, index: 1, ipc args: [string, bytes4], ipc returns: []

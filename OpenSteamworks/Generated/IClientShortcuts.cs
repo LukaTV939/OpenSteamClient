@@ -8,15 +8,17 @@
 
 using System;
 using OpenSteamworks.Attributes;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Protobuf;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
 /// <summary>
 /// The main interface for non-steam app management.
 /// </summary>
+[CppInterface]
 public unsafe interface IClientShortcuts
 {
     public AppId_t GetUniqueLocalAppId();  // argc: 0, index: 1, ipc args: [], ipc returns: [bytes4]

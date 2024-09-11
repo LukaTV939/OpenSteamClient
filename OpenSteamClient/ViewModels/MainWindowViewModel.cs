@@ -26,14 +26,17 @@ using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Startup;
 using OpenSteamworks.Client.Utils;
 using OpenSteamworks.ClientInterfaces;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.Messaging;
 
 using OpenSteamworks.Protobuf;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 using Profiler;
+using OpenSteamClient.DI;
+using OpenSteamClient.Logging;
+using OpenSteamClient.DI.Lifetime;
 
 namespace OpenSteamClient.ViewModels;
 
@@ -73,8 +76,8 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
         this.openSettingsWindow = openSettingsWindowAction;
         this.appsManager = appsManager;
 
-        this.client.CallbackManager.RegisterHandler(1210004, OnCGameNetworkingUI_AppSummary);
-        this.client.CallbackManager.RegisterHandler(1210001, OnClientNetworking_ConnectionStateChanged);
+        this.client.CallbackManager.Register(1210004, OnCGameNetworkingUI_AppSummary);
+        this.client.CallbackManager.Register(1210001, OnClientNetworking_ConnectionStateChanged);
 
         //TODO: Ideally we'd embed CEF ourselves (steamwebhelper does not seem very good for that purpose)
         PageList.Add(new(this, "Store", "#Tab_Store", typeof(StorePage), typeof(ViewModelBase)));
@@ -136,7 +139,7 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
         throw new Exception("test");
     }
 
-    private unsafe void OnCGameNetworkingUI_AppSummary(CallbackManager.CallbackHandler handler, byte[] data)
+    private unsafe void OnCGameNetworkingUI_AppSummary(ICallbackHandler handler, byte[] data)
     {
         try
         {
@@ -153,7 +156,7 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
         }
     }
 
-    private unsafe void OnClientNetworking_ConnectionStateChanged(CallbackManager.CallbackHandler handler, byte[] data)
+    private unsafe void OnClientNetworking_ConnectionStateChanged(ICallbackHandler handler, byte[] data)
     {
         try
         {
@@ -231,10 +234,9 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
 
     public async void SignOut()
     {
-        Progress<string> operation = new();
-        Progress<string> subOperation = new();
+        Progress<OperationProgress> operation = new();
         
-        AvaloniaApp.Current?.ForceProgressWindow(new ProgressWindowViewModel(operation, subOperation, 0, null, null, "Logging off"));
+        AvaloniaApp.Current?.ForceProgressWindow(new ProgressWindowViewModel(operation, "Logging off"));
         await this.loginManager.LogoutAsync(operation, true);
     }
 

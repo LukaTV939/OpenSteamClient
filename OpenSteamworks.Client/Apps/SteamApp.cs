@@ -7,15 +7,18 @@ using OpenSteamworks.Client.Apps.Compat;
 using OpenSteamworks.Client.Apps.Sections;
 using OpenSteamworks.Extensions;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.KeyValue;
 using OpenSteamworks.KeyValue.ObjectGraph;
 using OpenSteamworks.KeyValue.Deserializers;
 using OpenSteamworks.KeyValue.Serializers;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 using Profiler;
 using OpenSteamworks.Client.Managers;
+using OpenSteamworks.Data;
+using OpenSteamClient.DI;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Apps;
 
@@ -30,7 +33,7 @@ public class SteamApp : AppBase
     public override uint StoreAssetsLastModified => uint.Parse(this.Common.StoreAssetModificationTime, CultureInfo.InvariantCulture.NumberFormat);
 
     public AppBase? ParentApp => GetAppIfValidGameID(new CGameID(this.Common.ParentAppID));
-    protected readonly Logger logger;
+    protected readonly ILogger logger;
 
     public AppDataCommonSection Common { get; private set; }
     public AppDataConfigSection Config { get; private set; }

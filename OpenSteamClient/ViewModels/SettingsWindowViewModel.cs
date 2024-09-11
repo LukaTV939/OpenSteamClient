@@ -5,9 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using OpenSteamworks;
 using OpenSteamworks.Client;
 using OpenSteamworks.Client.Managers;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using Avalonia.Controls;
@@ -37,7 +37,7 @@ public partial class SettingsWindowViewModel : AvaloniaCommon.ViewModelBase
 
     public SettingsWindowViewModel(ConfigManager configManager, ClientApps clientApps, CallbackManager callbackManager, SettingsWindow settingsWindow, CompatManager compatManager, ISteamClient client, TranslationManager tm, LoginManager loginManager)
     {
-        callbackManager.RegisterHandler<LibraryFoldersChanged_t>(OnLibraryFoldersChanged);
+        callbackManager.Register<LibraryFoldersChanged_t>(OnLibraryFoldersChanged);
         this.configManager = configManager;
         this.compatManager = compatManager;
         this.clientApps = clientApps;
@@ -63,7 +63,7 @@ public partial class SettingsWindowViewModel : AvaloniaCommon.ViewModelBase
     }
 
     // Library folders window
-    private void OnLibraryFoldersChanged(CallbackManager.CallbackHandler<LibraryFoldersChanged_t> handler, LibraryFoldersChanged_t folder)
+    private void OnLibraryFoldersChanged(ICallbackHandler handler, LibraryFoldersChanged_t folder)
     {
         AvaloniaApp.Current?.RunOnUIThread(DispatcherPriority.Background, () => RefreshLibraryFolders());
     }

@@ -2,8 +2,7 @@ using System;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Native.JIT;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using static OpenSteamworks.SteamClient;
 using System.IO;
@@ -14,6 +13,9 @@ using System.Collections.Generic;
 using OpenSteamworks.Utils;
 using System.Text.RegularExpressions;
 using System.Runtime.Versioning;
+using OpenSteamClient.Logging;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Native;
 
@@ -153,8 +155,6 @@ public partial class ClientNative {
     public IClientVideo IClientVideo { get; private set; }
     public IClientVR IClientVR { get; private set; }
     public IClientTimeline IClientTimeline { get; private set; }
-
-    public ConCommands.ConsoleNative consoleNative;
     private static readonly string[] separator = new string[] { "\n" };
 
 
@@ -190,7 +190,7 @@ public partial class ClientNative {
 
     [MemberNotNull(nameof(IClientEngine))]
     private void LoadEngine() {
-        this.IClientEngine = this.CreateInterface<IClientEngine>("CLIENTENGINE_INTERFACE_VERSION005");
+        this.IClientEngine = this.CreateInterface<IClientEngine_Impl>("CLIENTENGINE_INTERFACE_VERSION005");
         this.Pipe = this.IClientEngine.CreateSteamPipe();
     }
 
@@ -441,8 +441,6 @@ public partial class ClientNative {
         }
         
         LoadInterfaces();
-
-        consoleNative = new ConCommands.ConsoleNative(this);
     }
 
     public void Unload() {
@@ -450,7 +448,7 @@ public partial class ClientNative {
     }
 
     // CreateInterface is common code. We should split it in the future.
-    public IFaceT CreateInterface<IFaceT>(string name) where IFaceT : class {
+    public IFaceT CreateInterface<IFaceT>(string name) where IFaceT : class, ICppClass<IFaceT> {
         IntPtr returned = IntPtr.Zero;
         int returnCode = -1;
 
@@ -463,7 +461,7 @@ public partial class ClientNative {
             throw new Exception($"Call to CreateInterface({name}) resulted in NULL. Return value {returnCode}");
         }
 
-        return JITEngine.GenerateClass<IFaceT>(returned);
+        return IFaceT.Create(returned);
     }
 
     [GeneratedRegex("\\[....-..-.. ..\\:..\\:..\\] +")]

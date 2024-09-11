@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct SteamServersConnected_t
+[Callback(101)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct SteamServersConnected_t
 {
 
-};
+}

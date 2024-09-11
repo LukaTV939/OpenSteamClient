@@ -9,12 +9,14 @@
 using System;
 using System.Text;
 using OpenSteamworks.Attributes;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientAppManager
 {
     public EAppError InstallApp(AppId_t unAppID, LibraryFolder_t libraryFolder, bool bLegacy);  // argc: 3, index: 1, ipc args: [bytes4, bytes4, bytes1], ipc returns: [bytes4]

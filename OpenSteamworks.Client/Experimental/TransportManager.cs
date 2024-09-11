@@ -6,12 +6,14 @@ using System.Text.Json.Nodes;
 using Google.Protobuf;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Client.Utils.DI;
-using OpenSteamworks.Enums;
+using OpenSteamClient.DI;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Messaging;
 using OpenSteamworks.Protobuf;
 using OpenSteamworks.Protobuf.WebUI;
 using OpenSteamworks.Utils;
+using OpenSteamClient.DI.Lifetime;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Experimental;
 
@@ -168,7 +170,7 @@ public class TransportManager : ILogonLifetime
     }
 
     private CMsgWebUITransportInfo? transportInfo;
-    public async Task OnLoggedOn(IExtendedProgress<int> progress, LoggedOnEventArgs e)
+    public async Task RunLogon(IProgress<OperationProgress> progress)
     {
         steamClient.IClientUtils.SetWebUITransportWebhelperPID((uint)Environment.ProcessId);
 
@@ -221,11 +223,11 @@ public class TransportManager : ILogonLifetime
         var req = new ProtoMsg<T>(msgName, true)
         {
             EMsg = EMsg.ServiceMethod,
-            body = body
+            Body = body
         };
         
-        req.header.JobidSource = msgid;
-        req.header.WebuiAuthKey = transportInfo?.AuthKey;
+        req.Header.JobidSource = msgid;
+        req.Header.WebuiAuthKey = transportInfo?.AuthKey;
 
         await transportWS.SendAsync(req.Serialize(), WebSocketMessageType.Binary, true, CancellationToken.None);
 
@@ -288,7 +290,7 @@ public class TransportManager : ILogonLifetime
         return tcs.Task;
     }
 
-    public async Task OnLoggingOff(IProgress<string> progress)
+    public async Task RunLogoff(IProgress<OperationProgress> progress)
     {
         readThreadRunning = false;
         transportThread = null;

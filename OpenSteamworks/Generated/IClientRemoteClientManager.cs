@@ -8,10 +8,12 @@
 
 using System;
 using OpenSteamworks.Attributes;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Generated;
 
+[CppInterface]
 public unsafe interface IClientRemoteClientManager
 {
     // WARNING: Arguments are unknown!

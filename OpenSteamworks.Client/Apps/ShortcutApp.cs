@@ -1,8 +1,9 @@
 using System.Diagnostics;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Protobuf;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Client.Apps;
 

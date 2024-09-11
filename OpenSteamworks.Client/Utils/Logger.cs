@@ -4,28 +4,20 @@ using System.Runtime.Intrinsics.X86;
 using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.VisualBasic;
+using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client;
 
 public class Logger : ILogger {
-    public enum Level
-    {
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR,
-        FATAL
-    }
-
     private struct LogData {
         public Logger logger;
         public DateTime Timestamp;
-        public Level Level;
+        public LogLevel Level;
         public string Message;
         public string Category;
         public bool FullLine;
 
-        public LogData(Logger logger, Level level, string msg, string category, bool fullLine) {
+        public LogData(Logger logger, LogLevel level, string msg, string category, bool fullLine) {
             this.logger = logger;
             this.Timestamp = DateTime.Now;
             this.Level = level;
@@ -78,12 +70,12 @@ public class Logger : ILogger {
     private static readonly Thread logThread;
 
     public class DataReceivedEventArgs : EventArgs {
-        public Level Level { get; set; }
+        public LogLevel Level { get; set; }
         public string Text { get; set; }
         public string AnsiColorSequence { get; set; }
         public string AnsiResetCode { get; set; }
         public bool FullLine { get; set; }
-        public DataReceivedEventArgs(Level level, string text, bool fullLine, string ansiColorSequence, string ansiResetCode) {
+        public DataReceivedEventArgs(LogLevel level, string text, bool fullLine, string ansiColorSequence, string ansiResetCode) {
             this.Level = level;
             this.Text = text;
             this.FullLine = fullLine;
@@ -164,7 +156,7 @@ public class Logger : ILogger {
         return logger;
     }
 
-    private static void MessageInternal(Logger logger, DateTime timestamp, Level level, string message, string category) {
+    private static void MessageInternal(Logger logger, DateTime timestamp, LogLevel level, string message, string category) {
         if (logger.parentLogger != null) {
             var actualCategory = logger.subLoggerName;
             if (!string.IsNullOrEmpty(category)) {
@@ -181,30 +173,34 @@ public class Logger : ILogger {
             formatted = string.Format("[{0} {1}{2}: {3}] {4}", timestamp.ToString("dd/MM/yyyy HH:mm:ss.ff"), logger.Name, string.IsNullOrEmpty(category) ? "" : $"/{category}", level.ToString(), message);
         }
 
+		if (!formatted.EndsWith(Environment.NewLine)) {
+			formatted += Environment.NewLine;
+		}
+
         string ansiColorCode = string.Empty;
         string ansiResetCode = string.Empty;
 
         if (!disableColors) {
             ansiResetCode = "\x1b[0m";
-            if (level == Level.FATAL) {
+            if (level == LogLevel.Fatal) {
                 ansiColorCode = "\x1b[91m";
-            } else if (level == Level.ERROR) {
+            } else if (level == LogLevel.Error) {
                 ansiColorCode = "\x1b[31m";
-            } else if (level == Level.WARNING) {
+            } else if (level == LogLevel.Warning) {
                 ansiColorCode = "\x1b[33m";
-            } else if (level == Level.INFO) {
+            } else if (level == LogLevel.Info) {
                 //ansiColorCode = "\x1b[37m";
-            } else if (level == Level.DEBUG) {
+            } else if (level == LogLevel.Debug) {
                 ansiColorCode = "\x1b[2;37m";
             }
         }
 
-        Console.WriteLine(ansiColorCode + formatted + ansiResetCode);
+        Console.Write(ansiColorCode + formatted + ansiResetCode);
 
         if (logger.logStream != null) {
             lock (logger.logStreamLock)
             {
-                logger.logStream.Write(Encoding.Default.GetBytes(formatted + Environment.NewLine));
+                logger.logStream.Write(Encoding.UTF8.GetBytes(formatted));
 
                 //TODO: Implement a more robust system with debouncing and/or per lines since last flush
                 logger.logStream.Flush();
@@ -214,15 +210,15 @@ public class Logger : ILogger {
         DataReceived?.Invoke(logger, new(level, formatted + Environment.NewLine, true, ansiColorCode, ansiResetCode));
     }
 
-    private void AddLine(Level level, string message, string category = "") {
+    private void AddLine(LogLevel level, string message, string category = "") {
         dataToLog.Enqueue(new LogData(this, level, message, category, true));
     }
 
-    private void AddData(string message) {
-        dataToLog.Enqueue(new LogData(this, Level.INFO, message, string.Empty, false));
+    private void AddData(LogLevel level, string message) {
+        dataToLog.Enqueue(new LogData(this, level, message, string.Empty, message.EndsWith(Environment.NewLine)));
     }
 
-    private static void WriteInternal(Logger logger, string message) {
+	private static void WriteInternal(Logger logger, string message) {
         Console.Write(message);
         if (logger.logStream != null) {
             lock (logger.logStreamLock)
@@ -231,136 +227,12 @@ public class Logger : ILogger {
             }
         }
 
-        DataReceived?.Invoke(logger, new(Level.INFO, message, false, string.Empty, string.Empty));
+        DataReceived?.Invoke(logger, new(LogLevel.Info, message, false, string.Empty, string.Empty));
     }
 
     /// <inheritdoc/>
-    public void Write(string message) {
-        AddData(message);
-    }
-
-    public void Message(Level level, string message) {
-        AddLine(level, message);
-    }
-    
-    public void Message(Level level, string message, string category) {
-        AddLine(level, message, category);
-    }
-    
-    public void Message(Level level, string message, params object?[] formatObjs) {
-        AddLine(level, string.Format(message, formatObjs));
-    }
-
-    public void Message(Level level, string message, string category, params object?[] formatObjs) {
-        AddLine(level, string.Format(message, formatObjs), category);
-    }
-
-    public void Trace(string message) {
-        this.Debug(message);
-    }
-
-    public void Trace(string message, string category) {
-        this.Debug(message, category);
-    }
-
-    public void Trace(string message, params object?[] formatObjs) {
-        this.Debug(message, formatObjs);
-    }
-
-    public void Trace(string message, string category, params object?[] formatObjs) {
-        this.Debug(message, category, formatObjs);
-    }
-
-    public void Debug(string message) {
-        this.Message(Level.DEBUG, message);
-    }
-
-    public void Debug(string message, string category) {
-        this.Message(Level.DEBUG, message, category);
-    }
-
-    public void Debug(string message, params object?[] formatObjs) {
-        this.Message(Level.DEBUG, message, formatObjs);
-    }
-
-    public void Debug(string message, string category, params object?[] formatObjs) {
-        this.Message(Level.DEBUG, message, category, formatObjs);
-    }
-
-    public void Info(string message) {
-        this.Message(Level.INFO, message);
-    }
-
-    public void Info(string message, string category) {
-        this.Message(Level.INFO, message, category);
-    }
-
-    public void Info(string message, params object?[] formatObjs) {
-        this.Message(Level.INFO, message, formatObjs);
-    }
-
-    public void Info(string message, string category, params object?[] formatObjs) {
-        this.Message(Level.INFO, message, category, formatObjs);
-    }
-
-    public void Warning(string message) {
-        this.Message(Level.WARNING, message);
-    }
-
-    public void Warning(string message, string category) {
-        this.Message(Level.WARNING, message, category);
-    }
-
-    public void Warning(string message, params object?[] formatObjs) {
-        this.Message(Level.WARNING, message, formatObjs);
-    }
-
-    public void Warning(string message, string category, params object?[] formatObjs) {
-        this.Message(Level.WARNING, message, category, formatObjs);
-    }
-
-    public void Warning(Exception e) {
-        this.Message(Level.WARNING, e.ToString());
-    }
-
-    public void Error(string message) {
-        this.Message(Level.ERROR, message);
-    }
-
-    public void Error(string message, string category) {
-        this.Message(Level.ERROR, message, category);
-    }
-
-    public void Error(string message, params object?[] formatObjs) {
-        this.Message(Level.ERROR, message, formatObjs);
-    }
-
-    public void Error(string message, string category, params object?[] formatObjs) {
-        this.Message(Level.ERROR, message, category, formatObjs);
-    }
-
-    public void Error(Exception e) {
-        this.Message(Level.ERROR, e.ToString());
-    }
-
-    public void Fatal(string message) {
-        this.Message(Level.FATAL, message);
-    }
-
-    public void Fatal(string message, string category) {
-        this.Message(Level.FATAL, message, category);
-    }
-
-    public void Fatal(string message, params object?[] formatObjs) {
-        this.Message(Level.FATAL, message, formatObjs);
-    }
-
-    public void Fatal(string message, string category, params object?[] formatObjs) {
-        this.Message(Level.FATAL, message, category, formatObjs);
-    }
-
-    public void Fatal(Exception e) {
-        this.Message(Level.FATAL, e.ToString());
+    public void Write(LogLevel level, string message) {
+        AddData(level, message);
     }
 
     ~Logger() {

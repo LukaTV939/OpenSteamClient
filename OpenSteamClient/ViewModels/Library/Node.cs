@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using Avalonia.Media;
 using OpenSteamworks.Utils;
 using CommunityToolkit.Mvvm.ComponentModel;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 
 namespace OpenSteamClient.ViewModels.Library;
 

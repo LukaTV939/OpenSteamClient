@@ -5,8 +5,9 @@ using AvaloniaCommon;
 using OpenSteamClient.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenSteamworks.Client.Apps;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.ViewModels;
 

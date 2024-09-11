@@ -1,4 +1,4 @@
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 
 namespace OpenSteamworks.Client.Notifications;
 

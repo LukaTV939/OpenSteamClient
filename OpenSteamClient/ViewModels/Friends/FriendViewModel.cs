@@ -17,11 +17,12 @@ using OpenSteamworks.Client;
 using OpenSteamworks.Client.Apps;
 using OpenSteamworks.Client.Friends;
 using OpenSteamworks.Client.Managers;
-using OpenSteamworks.ConCommands;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
+using OpenSteamClient.Logging;
+using OpenSteamClient.DI;
 
 namespace OpenSteamClient.ViewModels.Friends;
 

@@ -1,11 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
+[Callback(1280007)]
 [StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
-public unsafe struct AppValidationComplete_t
+public struct AppValidationComplete_t
 {
 	public AppId_t m_nAppID;
 	public bool m_bFinished;
@@ -14,4 +17,4 @@ public unsafe struct AppValidationComplete_t
 	public UInt64 m_TotalBytesFailed;
 	public UInt32 m_TotalFilesValidated;
 	public UInt32 m_TotalFilesFailed;
-};
+}

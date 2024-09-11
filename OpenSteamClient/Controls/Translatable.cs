@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using OpenSteamClient.DI;
 using OpenSteamClient.Translation;
 
 namespace OpenSteamClient.Controls;
@@ -30,7 +31,10 @@ public class Translatable : AvaloniaObject
     public static void SetTranslationKey(AvaloniaObject element, string val)
     {
         element.SetValue(TranslationKeyProperty, val);
-        AvaloniaApp.Container.GetNullable<TranslationManager>()?.TranslateAvaloniaObject(element);
+		if (AvaloniaApp.Container.TryGet(out TranslationManager? tm))
+		{
+			tm.TranslateAvaloniaObject(element);
+		}
     }
 
     public static string GetTranslationKey(AvaloniaObject element)

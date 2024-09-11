@@ -40,7 +40,9 @@ public static class GitInfo
   </ItemGroup>
 
   <ItemGroup>
+	<ProjectReference Include="..\OpenSteamClient.DI\OpenSteamClient.DI.csproj" />
     <ProjectReference Include="..\OpenSteamworks\OpenSteamworks.csproj" />
+	<ProjectReference Include="..\OpenSteamworks.Messaging\OpenSteamworks.Messaging.csproj" />
     <ProjectReference Include="..\Profiler\Profiler.csproj" />
   </ItemGroup>
 

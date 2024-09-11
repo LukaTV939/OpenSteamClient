@@ -1,12 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct SteamServerConnectFailure_t
+[Callback(102)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct SteamServerConnectFailure_t
 {
 	public EResult m_EResult;
     public bool m_bStillRetrying;
-};
+}

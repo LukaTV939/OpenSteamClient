@@ -1,24 +1,17 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using OpenSteamworks.Enums;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Attributes;
+using OpenSteamworks.Data.Enums;
+using OpenSteamworks.Data.Structs;
+using OpenSteamworks.Data;
 
 namespace OpenSteamworks.Callbacks.Structs;
 
-[StructLayout(LayoutKind.Sequential)]
-public unsafe struct FocusedAndFocusableWindowsUpdate_t
+[Callback(1040044)]
+[StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
+public struct FocusedAndFocusableWindowsUpdate_t
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct Unknown_t {
-        public UInt32 unk1;
-        public UInt32 unk2;
-        public UInt32 unk3;
-        public override string ToString()
-        {
-            return "unk1: " + unk1 + ", unk2: " + unk2 + ", unk3: " + unk3;
-        }
-    }
-
     public AppId_t currentlyFocusedAppID;
     public UInt32 unkLen1;
 
@@ -34,4 +27,4 @@ public unsafe struct FocusedAndFocusableWindowsUpdate_t
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 64)]
     public UInt32[] unk3;
-};
+}

@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using OpenSteamClient.Logging;
 using OpenSteamworks.Client.Enums;
 using OpenSteamworks.Client.Utils;
-using OpenSteamworks.Structs;
+using OpenSteamworks.Data;
+using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 
 namespace OpenSteamworks.Client.Apps.Library;

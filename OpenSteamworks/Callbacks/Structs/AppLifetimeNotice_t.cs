@@ -20,5 +20,6 @@ public struct AppLifetimeNotice_t
     public UInt16 unk5;
     public UInt16 unk6;
     
+	[MarshalAs(UnmanagedType.I1)]
 	public bool m_bExiting;
 }

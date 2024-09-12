@@ -55,7 +55,7 @@ public partial class LoginWindowViewModel : AvaloniaCommon.ViewModelBase
     //TODO: make a better system for communicating certain things to the views. This is hacky, and feels like we're reimplementing the wheel. ReactiveUI does not have a better solution for this unfortunately either, as it also adds a ton of spaghetti
     public Action<SecondFactorNeededEventArgs>? ShowSecondFactorDialog;
 
-    public LoginWindowViewModel(IClientUser clientUser, TranslationManager tm, LoginManager loginManager, LoginUser? user = null)
+    public LoginWindowViewModel(IClientUser clientUser, TranslationManager tm, LoginManager loginManager)
     {
         this.clientUser = clientUser;
         this.tm = tm;
@@ -67,13 +67,13 @@ public partial class LoginWindowViewModel : AvaloniaCommon.ViewModelBase
 
         qrGenerator = new QRCodeGenerator();
 
-        if (user != null)
-        {
-            this.Username = user.AccountName;
-        }
-
         this.loginManager.StartQRAuthLoop();
     }
+
+	public void SetUser(LoginUser loginUser)
+	{
+		this.Username = loginUser.AccountName;
+	}
 
     private void OnQRGenerated(object sender, QRGeneratedEventArgs e)
     {

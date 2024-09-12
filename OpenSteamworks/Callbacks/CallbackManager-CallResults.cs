@@ -22,8 +22,8 @@ public partial class CallbackManager {
 			return new CallResult<T>(failed, steamClient.IClientUtils.GetAPICallFailureReason(handle), new());
 		}
 
-		T inst = new();
-		Marshal.PtrToStructure<T>((nint)mem.Ptr, inst);
+		T inst;
+		inst = Marshal.PtrToStructure<T>((nint)mem.Ptr);
 
 		return new CallResult<T>(failed, steamClient.IClientUtils.GetAPICallFailureReason(handle), inst);
 	}

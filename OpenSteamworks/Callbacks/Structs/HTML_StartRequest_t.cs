@@ -15,5 +15,7 @@ public struct HTML_StartRequest_t
 	public string pchURL;
 	public string pchTarget;
 	public string pchPostData;
+
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bIsRedirect;
 }

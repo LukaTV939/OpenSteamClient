@@ -325,17 +325,13 @@ public class AvaloniaApp : Application
     /// </summary>
     public void ForceLoginWindow(LoginUser? user)
     {
-        LoginWindowViewModel vm;
-        if (user == null)
-        {
-            vm = AvaloniaApp.Container.Construct<LoginWindowViewModel>();
-        }
-        else
-        {
-            vm = AvaloniaApp.Container.Construct<LoginWindowViewModel>(user);
-        }
+        LoginWindowViewModel vm = AvaloniaApp.Container.Construct<LoginWindowViewModel>();
+		if (user != null)
+		{
+			vm.SetUser(user);
+		}
 
-        var window = new LoginWindow();
+		var window = new LoginWindow();
         //TODO: hacky
         vm.ShowSecondFactorDialog = window.ShowSecondFactorDialog;
         window.DataContext = vm;

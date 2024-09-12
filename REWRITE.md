@@ -16,9 +16,10 @@ Now, do it more smartly and tackle these issues individually, or in SMALL groups
 - [ ] DLL that houses the localization files, so it can be used anywhere, by anyone to get proper error strings.
 - [ ] ConCommand system needs rewrite (again)
 - [ ] Refactor everything to use ILoggerFactory instead of Logger.GetLogger
-- [ ] The logger looks terrible. Split by newlines.
+- [x] The logger looks terrible. Split by newlines.
 - [ ] Interface debugger is now broken for custom value types.
-- [ ] Combine OpenSteamClient and OpenSteamworks.Client, or just rewrite the entire thing from scratch with Reactivity in mind.
+- [ ] Figure out a way to cross compile Linux->Windows, or run GH actions on Windows too. 
+- [ ] Combine OpenSteamClient and OpenSteamworks.Client, or just rewrite the entire thing from scratch with MVVM in mind.
   - [ ] Rewrite the app system.
   - [ ] Rewrite the config system (for UI config).
   - [ ] Rewrite the bootstrapper.

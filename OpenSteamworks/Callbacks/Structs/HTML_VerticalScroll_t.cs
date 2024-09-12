@@ -15,6 +15,9 @@ public struct HTML_VerticalScroll_t
 	public UInt32 unScrollMax;
 	public UInt32 unScrollCurrent;
 	public float flPageScale;
+	
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bVisible;
+	
 	public UInt32 unPageSize;
 }

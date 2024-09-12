@@ -10,5 +10,7 @@ namespace OpenSteamworks.Callbacks.Structs;
 public struct SteamServerConnectFailure_t
 {
 	public EResult m_EResult;
+
+	[MarshalAs(UnmanagedType.I1)]
     public bool m_bStillRetrying;
 }

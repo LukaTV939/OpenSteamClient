@@ -15,7 +15,7 @@ public class CallbackSizeException : Exception
 
 	public static void ThrowOrWarn(int dataSize, int structSize, string debugName) {
 		if (dataSize < structSize) {
-			throw new CallbackSizeException($"Size of callback data is too small. Got only {dataSize}, but expected {structSize}");
+			throw new CallbackSizeException($"Size of callback data is too small. Got only {dataSize}, but expected {structSize}. Callback {debugName} is broken!");
 		} else if (dataSize > structSize) {
 			Logging.GeneralLogger.Warning($"Size of callback data is bigger than expected. Got {dataSize}, but expected only {structSize}. Callback {debugName} needs to be updated!");
 		}

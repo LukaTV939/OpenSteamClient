@@ -12,7 +12,9 @@ namespace OpenSteamworks.Callbacks.Structs;
 [StructLayout(LayoutKind.Sequential, Pack = SteamClient.Pack)]
 public struct AppLicensesChanged_t
 {
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bReloadAll;
+	
 	public UInt32 m_unAppsUpdated;
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 64)]
 	public AppId_t[] m_rgAppsUpdated;

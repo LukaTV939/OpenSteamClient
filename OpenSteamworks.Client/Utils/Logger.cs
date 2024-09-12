@@ -210,12 +210,12 @@ public class Logger : ILogger {
         DataReceived?.Invoke(logger, new(level, formatted + Environment.NewLine, true, ansiColorCode, ansiResetCode));
     }
 
-    private void AddLine(LogLevel level, string message, string category = "") {
-        dataToLog.Enqueue(new LogData(this, level, message, category, true));
-    }
-
     private void AddData(LogLevel level, string message) {
-        dataToLog.Enqueue(new LogData(this, level, message, string.Empty, message.EndsWith(Environment.NewLine)));
+		foreach (var line in message.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries))
+		{
+			dataToLog.Enqueue(new LogData(this, level, line, string.Empty, true));
+		}
+        
     }
 
 	private static void WriteInternal(Logger logger, string message) {

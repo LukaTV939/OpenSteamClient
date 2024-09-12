@@ -15,6 +15,10 @@ public struct HTML_LinkAtPosition_t
 	public UInt32 x;
 	public UInt32 y;
 	public string pchURL;
+
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bInput;
+
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bLiveLink;
 }

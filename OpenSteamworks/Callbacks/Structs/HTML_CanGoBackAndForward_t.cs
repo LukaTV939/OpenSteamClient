@@ -12,6 +12,10 @@ namespace OpenSteamworks.Callbacks.Structs;
 public struct HTML_CanGoBackAndForward_t
 {
 	public HHTMLBrowser unBrowserHandle;
+	
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bCanGoBack;
+
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bCanGoForward;
 }

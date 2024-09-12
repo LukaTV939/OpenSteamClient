@@ -14,7 +14,12 @@ public struct HTML_URLChanged_t
 	public HHTMLBrowser unBrowserHandle;
 	public string pchURL;
 	public string pchPostData;
+
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bIsRedirect;
+	
 	public string pchPageTitle;
+
+	[MarshalAs(UnmanagedType.I1)]
 	public bool bNewNavigation;
 }

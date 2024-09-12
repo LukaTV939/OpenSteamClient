@@ -10,7 +10,6 @@
         x:DataType="vm:AccountPickerWindowViewModel"
         Icon="/Assets/opensteam-logo.ico"
         Width="500" Height="300"
-        x:CompileBindings="False"
         c:Translatable.TranslationKey="#AccountPickerWindow_Title">
 
     <Design.DataContext>

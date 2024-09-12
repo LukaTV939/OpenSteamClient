@@ -48,6 +48,8 @@ public class AvaloniaApp : Application
     static AvaloniaApp()
     {
         var installManager = new InstallManager();
+		CApi.Initialize(installManager);
+		
 		var loggerFactory = new LoggerFactory(installManager);
 		Container = new Container(installManager, loggerFactory);
 		Container.ConstructAndRegister<LifetimeManager>();
@@ -224,28 +226,28 @@ public class AvaloniaApp : Application
         };
     }
 
-    private InterfaceList? CurrentInterfaceListWindow;
-    public void OpenInterfaceList()
-    {
-        if (CurrentInterfaceListWindow != null)
-        {
-            if (CurrentInterfaceListWindow.PlatformImpl != null)
-            {
-                // Not closed but maybe hidden, maybe shown in background
-                CurrentInterfaceListWindow.Show();
-                CurrentInterfaceListWindow.Activate();
-                return;
-            }
-        }
+    //private InterfaceList? CurrentInterfaceListWindow;
+    // public void OpenInterfaceList()
+    // {
+    //     if (CurrentInterfaceListWindow != null)
+    //     {
+    //         if (CurrentInterfaceListWindow.PlatformImpl != null)
+    //         {
+    //             // Not closed but maybe hidden, maybe shown in background
+    //             CurrentInterfaceListWindow.Show();
+    //             CurrentInterfaceListWindow.Activate();
+    //             return;
+    //         }
+    //     }
 
-        CurrentInterfaceListWindow = new();
+    //     CurrentInterfaceListWindow = new();
 
-        CurrentInterfaceListWindow.Show();
-        CurrentInterfaceListWindow.Closed += (object? sender, EventArgs e) =>
-        {
-            CurrentInterfaceListWindow = null;
-        };
-    }
+    //     CurrentInterfaceListWindow.Show();
+    //     CurrentInterfaceListWindow.Closed += (object? sender, EventArgs e) =>
+    //     {
+    //         CurrentInterfaceListWindow = null;
+    //     };
+    // }
 
     public void OpenMainWindow()
     {

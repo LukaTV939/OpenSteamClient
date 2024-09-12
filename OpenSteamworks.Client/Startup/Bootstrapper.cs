@@ -974,7 +974,7 @@ public class Bootstrapper {
             new("libbootstrappershim64.so", "libbootstrappershim64.so"),
         };
 
-        var assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        var assemblyFolder = Path.GetDirectoryName(AppContext.BaseDirectory);
         if (assemblyFolder == null) {
             throw new Exception("assemblyFolder is null.");
         }

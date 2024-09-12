@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenSteamClient.Logging;
@@ -188,7 +189,7 @@ public sealed partial class CallbackManager : IDisposable {
 		shouldThreadRun = true;
 	}
 	
-		public Task<T> WaitAsync<T>(CancellationToken cancellationToken = default) where T: struct {
+	public Task<T> WaitAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(CancellationToken cancellationToken = default) where T: struct {
 		TaskCompletionSource<T> taskCompletionSource = new();
 		object lockObj = new();
 
@@ -211,7 +212,7 @@ public sealed partial class CallbackManager : IDisposable {
 		return taskCompletionSource.Task;
 	}
 
-	public Task<T> WaitAsync<T>(Func<T, bool> checkFunction, CancellationToken cancellationToken = default) where T: struct {
+	public Task<T> WaitAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(Func<T, bool> checkFunction, CancellationToken cancellationToken = default) where T: struct {
 		TaskCompletionSource<T> taskCompletionSource = new();
 
 		var handler = Register((ICallbackHandler handler, T cb) =>

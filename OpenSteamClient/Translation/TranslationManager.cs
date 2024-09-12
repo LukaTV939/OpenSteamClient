@@ -142,7 +142,7 @@ public class TranslationManager : ILogonLifetime
             return null;
         }
 
-        return UtilityFunctions.AssertNotNull(JsonSerializer.Deserialize<Translation>(File.ReadAllText(fullPath)));
+        return UtilityFunctions.AssertNotNull(JsonSerializer.Deserialize<Translation>(File.ReadAllText(fullPath), JsonContext.Default.Translation));
     }
 
     /// <summary>

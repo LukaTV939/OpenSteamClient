@@ -22,7 +22,6 @@ public class SteamHTML : IClientLifetime
     private readonly InstallManager installManager;
     private readonly GlobalSettings globalSettings;
     private readonly ILogger logger;
-    private bool hasCopiedFiles = false;
     private static RefCount initCount = new();
 
     public SteamHTML(ISteamClient steamClient, InstallManager installManager, GlobalSettings globalSettings)

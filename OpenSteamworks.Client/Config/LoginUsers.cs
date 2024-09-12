@@ -1,13 +1,15 @@
 using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Client.Config.Attributes;
 using OpenSteamworks.Client.Login;
+using System.Text.Json.Serialization.Metadata;
 
 namespace OpenSteamworks.Client.Config;
 
-public class LoginUsers: IConfigFile {
-    static string IConfigFile.ConfigName => "LoginUsers_001";
-    static bool IConfigFile.PerUser => false;
-    static bool IConfigFile.AlwaysSave => false;
+public class LoginUsers: IConfigFile<LoginUsers> {
+	static JsonTypeInfo<LoginUsers> IConfigFile<LoginUsers>.JsonTypeInfo => ConfigJsonContext.Default.LoginUsers;
+	static string IConfigFile<LoginUsers>.ConfigName => "LoginUsers_001";
+    static bool IConfigFile<LoginUsers>.PerUser => false;
+    static bool IConfigFile<LoginUsers>.AlwaysSave => false;
 
     [ConfigNeverVisible]
     public int Autologin { get; set; } = -1;

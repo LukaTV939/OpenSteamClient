@@ -1,9 +1,0 @@
-<!-- This is responsible for making OutputPath, OutDir, and IntermediateOutputPath absolute -->
-
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' != ''">$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath)))</IntermediateOutputPath>
-        <OutputPath Condition="'$(OutputPath)' != ''">$([MSBuild]::NormalizeDirectory($(OutputPath)))</OutputPath>
-        <OutDir Condition="'$(OutDir)' != ''">$([MSBuild]::NormalizeDirectory($(OutDir)))</OutDir>
-    </PropertyGroup>
-</Project>

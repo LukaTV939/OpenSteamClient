@@ -184,7 +184,7 @@ public partial class SettingsWindowViewModel : AvaloniaCommon.ViewModelBase
 
     private void RefreshLanguages() {
         Languages.Clear();
-        foreach (var _item in Enum.GetValues(typeof(ELanguage)))
+        foreach (var _item in Enum.GetValues<ELanguage>())
         {
             var item = (ELanguage)_item;
             bool hasUITranslation = tm.HasUITranslation(item, out string? translationName);

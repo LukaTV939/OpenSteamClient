@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -26,7 +27,7 @@ public partial class CallbackManager {
 		public abstract void Invoke(byte[] callbackData);
 	}
 
-	private class TypedCallbackHandler<T> : CallbackHandlerBase where T : struct
+	private class TypedCallbackHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T> : CallbackHandlerBase where T : struct
 	{
 		public int Size { get; }
 
@@ -68,7 +69,7 @@ public partial class CallbackManager {
 		return handler;
 	}
 
-	public ICallbackHandler Register<T>(Action<ICallbackHandler, T> func) where T: struct {
+	public ICallbackHandler Register<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(Action<ICallbackHandler, T> func) where T: struct {
 		var callbackID = CallbackMetadata.GetIDFromType<T>();
 		var handler = new TypedCallbackHandler<T>(this, callbackID, func);
 		callbackHandlers[handler] = callbackID;

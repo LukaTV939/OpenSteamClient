@@ -1,13 +1,15 @@
 using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Client.Config.Attributes;
+using System.Text.Json.Serialization.Metadata;
 
 namespace OpenSteamworks.Client.Config;
 
-public class AdvancedConfig : IConfigFile
+public class AdvancedConfig : IConfigFile<AdvancedConfig>
 {
-    static string IConfigFile.ConfigName => "AdvancedConfig_001";
-    static bool IConfigFile.PerUser => false;
-    static bool IConfigFile.AlwaysSave => true;
+	static JsonTypeInfo<AdvancedConfig> IConfigFile<AdvancedConfig>.JsonTypeInfo => ConfigJsonContext.Default.AdvancedConfig;
+    static string IConfigFile<AdvancedConfig>.ConfigName => "AdvancedConfig_001";
+    static bool IConfigFile<AdvancedConfig>.PerUser => false;
+    static bool IConfigFile<AdvancedConfig>.AlwaysSave => true;
 
     [ConfigName("Connection Type", "#AdvancedConfig_EnabledConnectionTypes")]
     [ConfigDescription("Sets the ways to connect to Steam. If ExistingClient is specified, you can run ValveSteam in the background and OpenSteamClient will connect to it.", "#AdvancedConfig_EnabledConnectionTypesDesc")]

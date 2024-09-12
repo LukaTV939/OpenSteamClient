@@ -58,7 +58,7 @@ public partial class AvaloniaAppViewModel : AvaloniaCommon.ViewModelBase
         AvaloniaApp.Current?.ExitEventually();
     }
 
-    public void OpenInterfaceList() => AvaloniaApp.Current?.OpenInterfaceList();
+    // public void OpenInterfaceList() => AvaloniaApp.Current?.OpenInterfaceList();
 
     public void OpenSettings() => AvaloniaApp.Current?.OpenSettingsWindow();
 

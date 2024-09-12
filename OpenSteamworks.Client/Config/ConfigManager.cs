@@ -12,7 +12,34 @@ using OpenSteamClient.Logging;
 namespace OpenSteamworks.Client.Config;
 
 public class ConfigManager : IClientLifetime, ILogonLifetime {
-    private readonly InstallManager installManager;
+	private interface IConfigFileInternal 
+	{
+		public object Value { get; }
+		public Task SaveAsync();
+	}
+
+	private class ConfigFileInternal<T> : IConfigFileInternal where T: IConfigFile<T>, new()
+	{
+		public object Value { get; }
+
+		private readonly ConfigManager configManager;
+		public ConfigFileInternal(ConfigManager configManager, object value)
+		{
+			this.configManager = configManager;
+			this.Value = value;
+		}
+
+		public Task SaveAsync()
+		{
+			if (Value is not T asT) {
+				throw new ArgumentException("Invalid type", nameof(Value));
+			}
+
+			return configManager.SaveAsync(asT);
+		}
+	}
+
+	private readonly InstallManager installManager;
     private readonly IContainer container;
     private readonly ILogger logger;
     private readonly static JsonSerializerOptions jsonOpts = new()
@@ -20,9 +47,8 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         WriteIndented = true
     };
 
-    private readonly MethodInfo saveAsyncCached;
-    private readonly Dictionary<Type, object> loadedConfigs = new();
-    private readonly Dictionary<Type, object> loadedUserConfigs = new();
+    private readonly Dictionary<Type, IConfigFileInternal> loadedConfigs = new();
+    private readonly Dictionary<Type, IConfigFileInternal> loadedUserConfigs = new();
     private readonly List<Type> registeredConfigs = new();
     public ReadOnlyCollectionEx<Type> RegisteredConfigs => new(registeredConfigs);
 
@@ -35,10 +61,9 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         container.RegisterFactoryMethod<GlobalSettings>(() => Get<GlobalSettings>());
         container.RegisterFactoryMethod<LoginUsers>(() => Get<LoginUsers>());
         container.RegisterFactoryMethod<UserSettings>(() => Get<UserSettings>());
-        saveAsyncCached = this.GetType().GetMethod(nameof(SaveAsync))!;
     }
 
-    private string GetPathForConfig<T>() where T: IConfigFile {
+    private string GetPathForConfig<T>() where T: IConfigFile<T> {
         string basePath;
         if (T.PerUser) {
             if (!this.container.TryGet(out LoginManager? loginManager))
@@ -63,19 +88,19 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
     /// Registers a config file for use by editor GUIs.
     /// Automatically called in Get as well.
     /// </summary>
-    public void Register<T>() where T: IConfigFile {
+    public void Register<T>() where T: IConfigFile<T> {
         if (!this.registeredConfigs.Contains(typeof(T))) {
             this.registeredConfigs.Add(typeof(T));
         }
     }
 
-    public T Get<T>() where T: IConfigFile, new() {
-        if (loadedConfigs.TryGetValue(typeof(T), out object? val)) {
-            return (T)val;
+    public T Get<T>() where T: IConfigFile<T>, new() {
+        if (loadedConfigs.TryGetValue(typeof(T), out IConfigFileInternal? val)) {
+            return (T)val.Value;
         }
 
-        if (loadedUserConfigs.TryGetValue(typeof(T), out object? valUser)) {
-            return (T)valUser;
+        if (loadedUserConfigs.TryGetValue(typeof(T), out IConfigFileInternal? valUser)) {
+            return (T)valUser.Value;
         }
 
         var fullPath = GetPathForConfig<T>();
@@ -84,7 +109,7 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         if (File.Exists(fullPath) && new FileInfo(fullPath).Length > 0) {
             using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                result = JsonSerializer.Deserialize<T>(stream);
+                result = JsonSerializer.Deserialize<T>(stream, T.JsonTypeInfo);
             }
         } else {
             logger.Warning("File did not exist or it was empty");
@@ -95,9 +120,9 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         }
 
         if (T.PerUser) {
-            loadedUserConfigs[typeof(T)] = result;
+            loadedUserConfigs[typeof(T)] = new ConfigFileInternal<T>(this, result);
         } else {
-            loadedConfigs[typeof(T)] = result;
+            loadedConfigs[typeof(T)] = new ConfigFileInternal<T>(this, result);
         }
 
         Register<T>();
@@ -105,21 +130,21 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         return result;
     }
     
-    private static MemoryStream HasChanged<T>(T instance, out bool hasChanged) where T: IConfigFile, new() {
+    private static MemoryStream HasChanged<T>(T instance, out bool hasChanged) where T: IConfigFile<T>, new() {
         using var defaultstream = new MemoryStream();
         var instancestream = new MemoryStream();
         
-        JsonSerializer.Serialize(defaultstream, new T(), jsonOpts);
+        JsonSerializer.Serialize(defaultstream, new T(), T.JsonTypeInfo);
         defaultstream.Position = 0;
 
-        JsonSerializer.Serialize(instancestream, instance, jsonOpts);
+        JsonSerializer.Serialize(instancestream, instance, T.JsonTypeInfo);
         instancestream.Position = 0;
         
         hasChanged = !defaultstream.AreEqual(instancestream);
         return instancestream;
     }
 
-    public void Save<T>(T instance) where T: IConfigFile, new() {
+    public void Save<T>(T instance) where T: IConfigFile<T>, new() {
         var fullPath = GetPathForConfig<T>();
 
         using (var stream = HasChanged(instance, out bool hasChanged))
@@ -136,7 +161,7 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
         }
     }
 
-    public async Task SaveAsync<T>(T instance) where T: IConfigFile, new() {
+    public async Task SaveAsync<T>(T instance) where T: IConfigFile<T>, new() {
         using var subScope = CProfiler.CurrentProfiler?.EnterScope("ConfigManager.SaveAsync");
 
         var fullPath = GetPathForConfig<T>();
@@ -165,11 +190,7 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
     {
         operation.Report(new("Saving configs"));
 
-        foreach (var item in loadedConfigs)
-        {
-            // TODO: This is icky
-            await (Task)saveAsyncCached.MakeGenericMethod(item.Key).Invoke(this, new[] { item.Value })!;
-        }
+		await Task.WhenAll(loadedConfigs.Select(c => c.Value.SaveAsync()));
 
         loadedConfigs.Clear();
         await Task.CompletedTask;
@@ -184,11 +205,7 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
     {
         progress.Report(new("Saving user configs"));
         
-        foreach (var item in loadedUserConfigs)
-        {
-            // TODO: This is icky
-            await (Task)saveAsyncCached.MakeGenericMethod(item.Key).Invoke(this, new[] { item.Value })!;
-        }
+        await Task.WhenAll(loadedUserConfigs.Select(c => c.Value.SaveAsync()));
 
         loadedUserConfigs.Clear();
     }

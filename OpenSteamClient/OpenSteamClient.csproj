@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- Required by MainExe -->
-    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <!-- <EnableDynamicLoading>true</EnableDynamicLoading> -->
 
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>$(CommonNetVersion)</TargetFramework>
     <Nullable>enable</Nullable>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -16,9 +15,17 @@
 
     <!-- Supported runtimes (https://learn.microsoft.com/en-us/dotnet/core/rid-catalog) -->
     <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+
+	<PublishAot>true</PublishAot>
+	<IlcExportUnmanagedEntrypoints>true</IlcExportUnmanagedEntrypoints>
+
+	<TrimmerSingleWarn>false</TrimmerSingleWarn>
   </PropertyGroup>
 
   <ItemGroup>
+	<Compile Remove="Views/Debugging/Borked/**"/>
+	<AvaloniaXaml Remove="Views/Debugging/Borked/**"/>
+
     <PackageReference Include="QRCoder" Version="1.4.3" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.0.6" />
   </ItemGroup>

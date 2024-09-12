@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace OpenSteamworks.Client.Apps.Compat;
 
+
 public class ProtonDBInfo
 {
     public enum ETier {

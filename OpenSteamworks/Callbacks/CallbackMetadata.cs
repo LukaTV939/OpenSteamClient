@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,7 +14,7 @@ namespace OpenSteamworks.Callbacks;
 /// </summary>
 internal static partial class CallbackMetadata {
 	private const string ARRAY_JOIN_SEPARATOR = ", ";
-	private static unsafe T GetStructForCallback<T>(byte[] data) where T: struct {
+	private static unsafe T GetStructForCallback<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(byte[] data) where T: struct {
 		CallbackSizeException.ThrowOrWarn(data.Length, Marshal.SizeOf<T>(), typeof(T).Name);
 
 		fixed (byte* ptr = data) {

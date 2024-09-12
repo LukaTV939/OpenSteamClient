@@ -84,27 +84,27 @@ public class Collection
             }
 
             if (json.filterSpec.filterGroups.Length > 1) {
-                collection.StateFilter = FilterGroup<ELibraryAppStateFilter>.FromJSONFilterGroup(json.filterSpec.filterGroups[1]);
+                collection.StateFilter = FilterGroup<ELibraryAppStateFilter>.FromJSONFilterGroup(JsonContext.Default.ELibraryAppStateFilter, json.filterSpec.filterGroups[1]);
             } else {
-                collection.StateFilter = new();
+                collection.StateFilter = new(JsonContext.Default.ELibraryAppStateFilter);
             }
 
             if (json.filterSpec.filterGroups.Length > 2) {
-                collection.FeatureAndSupportFilter = FilterGroup<ELibraryAppFeaturesFilter>.FromJSONFilterGroup(json.filterSpec.filterGroups[2]);
+                collection.FeatureAndSupportFilter = FilterGroup<ELibraryAppFeaturesFilter>.FromJSONFilterGroup(JsonContext.Default.ELibraryAppFeaturesFilter, json.filterSpec.filterGroups[2]);
             } else {
-                collection.FeatureAndSupportFilter = new();
+                collection.FeatureAndSupportFilter = new(JsonContext.Default.ELibraryAppFeaturesFilter);
             }
 
             if (json.filterSpec.filterGroups.Length > 4) {
-                collection.StoreTagsFilter = FilterGroup<int>.FromJSONFilterGroup(json.filterSpec.filterGroups[4]);
+                collection.StoreTagsFilter = FilterGroup<int>.FromJSONFilterGroup(JsonContext.Default.Int32, json.filterSpec.filterGroups[4]);
             } else {
-                collection.StoreTagsFilter = new();
+                collection.StoreTagsFilter = new(JsonContext.Default.Int32);
             }
 
             if (json.filterSpec.filterGroups.Length > 6) {
-                collection.FriendsInCommonFilter = FilterGroup<uint>.FromJSONFilterGroup(json.filterSpec.filterGroups[6]);
+                collection.FriendsInCommonFilter = FilterGroup<uint>.FromJSONFilterGroup(JsonContext.Default.UInt32, json.filterSpec.filterGroups[6]);
             } else {
-                collection.FriendsInCommonFilter = new();
+                collection.FriendsInCommonFilter = new(JsonContext.Default.UInt32);
             }
         }
         

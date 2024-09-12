@@ -1,12 +1,14 @@
 using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Client.Config.Attributes;
+using System.Text.Json.Serialization.Metadata;
 
 namespace OpenSteamworks.Client.Config;
 
-public class GlobalSettings: IConfigFile {
-    static string IConfigFile.ConfigName => "GlobalSettings_001";
-    static bool IConfigFile.PerUser => false;
-    static bool IConfigFile.AlwaysSave => false;
+public class GlobalSettings: IConfigFile<GlobalSettings> {
+	static JsonTypeInfo<GlobalSettings> IConfigFile<GlobalSettings>.JsonTypeInfo => ConfigJsonContext.Default.GlobalSettings;
+    static string IConfigFile<GlobalSettings>.ConfigName => "GlobalSettings_001";
+    static bool IConfigFile<GlobalSettings>.PerUser => false;
+    static bool IConfigFile<GlobalSettings>.AlwaysSave => false;
     
     [ConfigName("Enable Webhelper", "#GlobalSettings_EnableWebHelper")]
     [ConfigDescription("Enables/disables Webhelper. Required for some games and for browsing the store and community pages in-client. 100% functionality is not guaranteed.", "#GlobalSettings_EnableWebHelperDesc")]

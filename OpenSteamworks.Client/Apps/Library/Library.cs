@@ -73,7 +73,7 @@ public class Library
                 foreach (var entry in keyValues)
                 {
                     logger.Trace("Attempting to deserialize: " + entry.Value);
-                    JSONCollection? json = System.Text.Json.JsonSerializer.Deserialize<JSONCollection>(entry.Value);
+                    JSONCollection? json = JsonSerializer.Deserialize(entry.Value, JsonContext.Default.JSONCollection);
                     if (json == null)
                     {
                         throw new NullReferenceException("Deserializing collection " + entry.Key + " failed");
@@ -258,7 +258,7 @@ public class Library
                 continue;
             }
 
-            this.namespaceData["user-collections." + category.ID] = JsonSerializer.Serialize<JSONCollection>(category.ToJSON());
+            this.namespaceData["user-collections." + category.ID] = JsonSerializer.Serialize(category.ToJSON(), JsonContext.Default.JSONCollection);
         }
 
         await this.cloudConfigStore.CacheNamespace(this.namespaceData);

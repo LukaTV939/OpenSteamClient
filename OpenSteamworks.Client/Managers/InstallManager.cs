@@ -54,7 +54,7 @@ public class InstallManager
     public string AssemblyDirectory { get; private set; }
 
     public InstallManager() {
-        AssemblyDirectory = UtilityFunctions.AssertNotNull(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+        AssemblyDirectory = UtilityFunctions.AssertNotNull(Path.GetDirectoryName(AppContext.BaseDirectory));
         //TODO: use registry to get installdir on Windows when we build an installer.
         // Currently just use LocalApplicationData, which maps:
         // Linux: $HOME/.local/share/OpenSteam

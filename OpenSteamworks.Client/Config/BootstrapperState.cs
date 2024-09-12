@@ -1,13 +1,15 @@
 using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Client.Config.Attributes;
+using System.Text.Json.Serialization.Metadata;
 
 namespace OpenSteamworks.Client.Config;
 
-public class BootstrapperState : IConfigFile
+public class BootstrapperState : IConfigFile<BootstrapperState>
 {
-    static string IConfigFile.ConfigName => "BootstrapperState_001";
-    static bool IConfigFile.PerUser => false;
-    static bool IConfigFile.AlwaysSave => false;
+	static JsonTypeInfo<BootstrapperState> IConfigFile<BootstrapperState>.JsonTypeInfo => ConfigJsonContext.Default.BootstrapperState;
+    static string IConfigFile<BootstrapperState>.ConfigName => "BootstrapperState_001";
+    static bool IConfigFile<BootstrapperState>.PerUser => false;
+    static bool IConfigFile<BootstrapperState>.AlwaysSave => false;
 
     [ConfigNeverVisible]
     public uint InstalledVersion { get; set; } = 0;

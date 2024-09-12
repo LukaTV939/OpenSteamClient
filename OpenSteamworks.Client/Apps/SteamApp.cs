@@ -155,8 +155,8 @@ public class SteamApp : AppBase
 
     public async Task<ProtonDBInfo> GetProtonDBCompatData() {
         string response = await Client.HttpClient.GetStringAsync($"https://www.protondb.com/api/v1/reports/summaries/{this.AppID}.json");
-        JsonSerializerOptions.Default.Converters.Add(new JsonStringEnumConverter());
-        var json = JsonSerializer.Deserialize<ProtonDBInfo>(response);
+		
+        var json = JsonSerializer.Deserialize(response, JsonContext.Default.ProtonDBInfo);
         if (json == null) {
             throw new NullReferenceException("Failed to get compatibility data from ProtonDB");
         }

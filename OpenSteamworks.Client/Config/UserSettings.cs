@@ -1,13 +1,15 @@
 using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Client.Config.Attributes;
 using OpenSteamworks.Client.Enums;
+using System.Text.Json.Serialization.Metadata;
 
 namespace OpenSteamworks.Client.Config;
 
-public class UserSettings: IConfigFile {
-    static string IConfigFile.ConfigName => "UserSettings_001";
-    static bool IConfigFile.PerUser => true;
-    static bool IConfigFile.AlwaysSave => false;
+public class UserSettings: IConfigFile<UserSettings> {
+	static JsonTypeInfo<UserSettings> IConfigFile<UserSettings>.JsonTypeInfo => ConfigJsonContext.Default.UserSettings;
+    static string IConfigFile<UserSettings>.ConfigName => "UserSettings_001";
+    static bool IConfigFile<UserSettings>.PerUser => true;
+    static bool IConfigFile<UserSettings>.AlwaysSave => false;
 
     [ConfigName("Language", "#UserSettings_Language")]
     [ConfigDescription("Sets the language of the client.", "#UserSettings_LanguageDesc")]

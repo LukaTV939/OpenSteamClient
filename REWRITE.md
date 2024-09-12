@@ -3,14 +3,14 @@ I did a lot of the stuff on this checklist, but then got burned out due to the h
 Now, do it more smartly and tackle these issues individually, or in SMALL groups, to avoid scope creep and burnout.
 - [x] Split DI into a separate package (along with API)
 - [x] Split logging into a separate package (along with API)
-- [ ] OperationProgress, instead of IExtendedProgress
+- [x] OperationProgress, instead of IExtendedProgress
 - [ ] Stop using concrete classes everywhere, and switch to interfaces.
 - [ ] Use proper DI instead of relying on globals.
 - [ ] Fix the app system.
 - [ ] Make the app system async.
 - [ ] And most importantly: Fix the app system.
 - [ ] Protobuf marshalling without IntPtr arguments
-- [ ] SharedConnection needs rework.
+- [ ] SharedConnection needs rework (segfaults when exiting)
 - [ ] OSWUpdater rewrite in C#
   - [ ] Maybe even the dumper. Someday.
 - [ ] DLL that houses the localization files, so it can be used anywhere, by anyone to get proper error strings.
@@ -24,7 +24,10 @@ Now, do it more smartly and tackle these issues individually, or in SMALL groups
   - [ ] Rewrite the bootstrapper.
 - [ ] NativeAOT support:
   - [x] OpenSteamworks
-  - GUI
+  - [x] OpenSteamworks.Client
+  - [x] OpenSteamworks.KeyValue
+  - [ ] OpenSteamClient
+    - [ ] Interface debugger
 - [ ] Proper API:
   - [ ] Bootstrapper API
   - [ ] InstallManager API

@@ -180,7 +180,7 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
         }
     }
 
-    public void DBG_OpenInterfaceList() => AvaloniaApp.Current?.OpenInterfaceList();
+    // public void DBG_OpenInterfaceList() => AvaloniaApp.Current?.OpenInterfaceList();
     public void DBG_ChangeLanguage()
     {
         // Very simple logic, just switches between english and finnish. 

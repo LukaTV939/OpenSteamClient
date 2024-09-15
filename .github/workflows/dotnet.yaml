@@ -14,7 +14,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,6 +42,25 @@ jobs:
       working-directory: ./artifacts/publish/OpenSteamClient/release/
       run: sh -c 'zip -r "${GITHUB_WORKSPACE}/OpenSteamClient_Linux.zip" .'
 
+    - name: Add OpenSteamClient Linux artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: OpenSteamClient (Linux)
+        path: ${{ github.workspace }}/OpenSteamClient_Linux.zip
+  build-win:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download repo and submodules
+      run: | 
+        git submodule update --init --recursive
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.x'
+
     # No NativeAOT cross compile, so just build a regular trimmed version instead.
     - name: Build Release OpenSteamClient (Windows)
       working-directory: ./OpenSteamClient
@@ -50,12 +69,6 @@ jobs:
     - name: Create OpenSteamClient zip (Windows)
       working-directory: ./artifacts/publish/OpenSteamClient/release_win-x64/
       run: sh -c 'zip -r "${GITHUB_WORKSPACE}/OpenSteamClient_Windows.zip" .'
-
-    - name: Add OpenSteamClient Linux artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: OpenSteamClient (Linux)
-        path: ${{ github.workspace }}/OpenSteamClient_Linux.zip
 
     - name: Add OpenSteamClient Windows artifact
       uses: actions/upload-artifact@v3

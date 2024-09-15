@@ -14,6 +14,8 @@ namespace OpenSteamworks.Callbacks;
 /// </summary>
 internal static partial class CallbackMetadata {
 	private const string ARRAY_JOIN_SEPARATOR = ", ";
+	private const string BYTE_ARRAY_JOIN_SEPARATOR = ", ";
+
 	private static unsafe T GetStructForCallback<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(byte[] data) where T: struct {
 		CallbackSizeException.ThrowOrWarn(data.Length, Marshal.SizeOf<T>(), typeof(T).Name);
 
@@ -25,6 +27,11 @@ internal static partial class CallbackMetadata {
 	private static string EnumerableToString<T>(IEnumerable<T>? obj) {
 		if (obj is null || obj == null) {
 			return "(null)";
+		}
+
+		if (obj is IEnumerable<byte> byteArr)
+		{
+			return $"[{string.Join(BYTE_ARRAY_JOIN_SEPARATOR, byteArr.Select(b => $"0x{b.ToString("X2")}"))}]";
 		}
 
 		return $"[{string.Join(ARRAY_JOIN_SEPARATOR, obj)}]";

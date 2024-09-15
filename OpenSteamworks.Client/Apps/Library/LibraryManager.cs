@@ -29,10 +29,11 @@ public class LibraryManager : ILogonLifetime
         Hero,
         Portrait
     }
-    
+	
+	private readonly ILoggerFactory loggerFactory;
     private readonly CloudConfigStore cloudConfigStore;
     private readonly ISteamClient steamClient;
-    internal Logger Logger { get; }
+    internal ILogger Logger { get; }
     private readonly InstallManager installManager;
     private readonly LoginManager loginManager;
     private readonly AppsManager appsManager;
@@ -49,8 +50,9 @@ public class LibraryManager : ILogonLifetime
     public string LibraryAssetsPath { get; private set; }
     
 
-    public LibraryManager(ISteamClient steamClient, CloudConfigStore cloudConfigStore, LoginManager loginManager, InstallManager installManager, AppsManager appsManager) {
-        this.Logger = Logger.GetLogger("LibraryManager", installManager.GetLogPath("LibraryManager"));
+    public LibraryManager(ISteamClient steamClient, CloudConfigStore cloudConfigStore, ILoggerFactory loggerFactory, LoginManager loginManager, InstallManager installManager, AppsManager appsManager) {
+        this.loggerFactory = loggerFactory;
+		this.Logger = loggerFactory.CreateLogger("LibraryManager");
         this.installManager = installManager;
         this.steamClient = steamClient;
         this.loginManager = loginManager;
@@ -62,7 +64,7 @@ public class LibraryManager : ILogonLifetime
     }
 
     public async Task RunLogon(IProgress<OperationProgress> progress) {
-        Library library = new(this, steamClient, cloudConfigStore, loginManager, appsManager, installManager);
+        Library library = new(this, steamClient, loggerFactory, cloudConfigStore, loginManager, appsManager, installManager);
         HashSet<CGameID> allUserAppIDs = await library.InitializeLibrary();
         await appsManager.ClientApps.UpdateAppInfo(allUserAppIDs.Where(a => a.IsSteamApp()).Select(a => a.AppID).ToArray());
 
@@ -107,7 +109,7 @@ public class LibraryManager : ILogonLifetime
             WriteConcurrentAssetDict();
 
             if (appsToGenerate.Any()) {
-                LibraryAssetsGenerator generator = new(installManager, steamClient, appsToGenerate.ToList(), LibraryAssetToFilename);
+                LibraryAssetsGenerator generator = new(installManager, steamClient, loggerFactory, appsToGenerate.ToList(), LibraryAssetToFilename);
                 var expectedApps = appsToGenerate.Select(r => r.AppID);
                 var generatedApps = await generator.Generate();
                 foreach (var item in expectedApps)

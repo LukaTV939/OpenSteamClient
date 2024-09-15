@@ -157,7 +157,9 @@ public class SteamClient : ISteamClient
         this.steamclientLibPath = steamclientLibPath;
         this.connectionType = connectionType;
 
-        this.CallbackManager = new CallbackManager(this, loggingSettings.LoggerFactory);
+		Logging.SetFromLoggerFactory(loggingSettings.LoggerFactory);
+
+		this.CallbackManager = new CallbackManager(this, loggingSettings.LoggerFactory);
         this.NativeClient = new ClientNative(steamclientLibPath, connectionType);
 
         Logging.GeneralLogger.Info($"Successfully initialized SteamClient library with HSteamPipe={this.NativeClient.Pipe} HSteamUser={this.NativeClient.User} ConnectionType={this.NativeClient.ConnectedWith}");

@@ -37,20 +37,8 @@ public class ProtoMsg<T> : ProtoMsgBase, ISerializableMsg where T: IMessage<T>, 
     /// </summary>
     /// <param name="jobName">The JobName of the message</param>
     /// <param name="unauthenticated">If this message is a job AND this argument is set, send this as a NonAuthed service call, otherwise it is sent as a regular service call</param>
-    public ProtoMsg(T body, string jobName, bool unauthenticated = false) : this()
+    public ProtoMsg(T body, string jobName, bool unauthenticated = false) : this(jobName, unauthenticated)
     {
-        if (string.IsNullOrEmpty(jobName)) {
-            throw new NullReferenceException("jobName is null when creating job-based protomsg");
-        }
-
-        Header.Steamid = 0;
-        this.JobName = jobName;
-        if (unauthenticated) {
-            this.EMsg = EMsg.ServiceMethodCallFromClientNonAuthed;
-        } else {
-            this.EMsg = EMsg.ServiceMethodCallFromClient;
-        }
-
         Body = body;
     }
 
@@ -70,9 +58,8 @@ public class ProtoMsg<T> : ProtoMsgBase, ISerializableMsg where T: IMessage<T>, 
     /// <summary>
     /// Constructs a new ProtoMsg with the specified EMsg and existing data
     /// </summary>
-    public ProtoMsg(EMsg eMsg, T body) : this()
+    public ProtoMsg(EMsg eMsg, T body) : this(eMsg)
     {
-        this.EMsg = eMsg;
         this.Body = body;
     }
 

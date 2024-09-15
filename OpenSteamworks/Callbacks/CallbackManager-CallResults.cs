@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using OpenSteamworks.Callbacks.Structs;
 using OpenSteamworks.Utils;
 using OpenSteamworks.Data;
@@ -9,7 +10,7 @@ using OpenSteamworks.Data;
 namespace OpenSteamworks.Callbacks;
 
 public partial class CallbackManager {
-	private unsafe CallResult<T> GetCompletedCall<T>(SteamAPICall_t handle) where T: struct {
+	private unsafe CallResult<T> GetCompletedCall<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(SteamAPICall_t handle) where T: struct {
 		int expectedCallbackID = CallbackMetadata.GetIDFromType<T>();
 		int expectedSize = Marshal.SizeOf<T>();
 		using var mem = NativeMemoryBlock.AllocZeroed((nuint)expectedSize);
@@ -28,7 +29,7 @@ public partial class CallbackManager {
 		return new CallResult<T>(failed, steamClient.IClientUtils.GetAPICallFailureReason(handle), inst);
 	}
 	
-	private async Task<CallResult<T>> WaitCallResultAsync<T>(SteamAPICall_t handle, CancellationToken cancellationToken = default) where T: struct
+	private async Task<CallResult<T>> WaitCallResultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(SteamAPICall_t handle, CancellationToken cancellationToken = default) where T: struct
 	{
 		int expectedCallbackID = CallbackMetadata.GetIDFromType<T>();
 		int expectedSize = Marshal.SizeOf<T>();
@@ -50,7 +51,7 @@ public partial class CallbackManager {
 	/// <param name="apiCall">The function to call, which will return a call handle. </param>
 	/// <param name="cancellationToken">A cancellation token, if wanted.</param>
 	/// <returns></returns>
-	public async Task<CallResult<T>> RunAsyncCall<T>(Func<SteamAPICall_t> apiCall, CancellationToken cancellationToken = default) where T: struct
+	public async Task<CallResult<T>> RunAsyncCall<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(Func<SteamAPICall_t> apiCall, CancellationToken cancellationToken = default) where T: struct
 	{
 		await PauseThreadAsync();
 		var task = WaitCallResultAsync<T>(apiCall(), cancellationToken);
@@ -66,7 +67,7 @@ public partial class CallbackManager {
 	/// <param name="apiCall">The function to call, which will return a call handle. </param>
 	/// <param name="cancellationToken">A cancellation token, if wanted.</param>
 	/// <returns></returns>
-	public async Task<CallResult<T>> RunAsyncCall<T>(Func<SteamAPICall<T>> apiCall, CancellationToken cancellationToken = default) where T: struct
+	public async Task<CallResult<T>> RunAsyncCall<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(Func<SteamAPICall<T>> apiCall, CancellationToken cancellationToken = default) where T: struct
 	{
 		await PauseThreadAsync();
 		var task = WaitCallResultAsync<T>(apiCall(), cancellationToken);

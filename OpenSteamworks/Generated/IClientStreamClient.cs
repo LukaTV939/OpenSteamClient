@@ -34,9 +34,9 @@ public unsafe interface IClientStreamClient
     public void SetBitrateOverride(uint val);  // argc: 1, index: 8, ipc args: [bytes4], ipc returns: []
     public void ShowOnScreenKeyboard();  // argc: 0, index: 9, ipc args: [], ipc returns: []
     // WARNING: Arguments are unknown!
-    public SteamAPICall_t BQueueControllerConfigMessageForLocal([ProtobufPtrType(typeof(CControllerConfigMsg))] IntPtr protoptr);  // argc: 1, index: 10, ipc args: [protobuf], ipc returns: [bytes8]
+    public SteamAPICall_t BQueueControllerConfigMessageForLocal(CControllerConfigMsg message);  // argc: 1, index: 10, ipc args: [protobuf], ipc returns: [bytes8]
     // WARNING: Arguments are unknown!
-    public bool BGetControllerConfigMessageForRemote([ProtobufPtrType(typeof(CControllerConfigMsg))] IntPtr protoptr);  // argc: 1, index: 11, ipc args: [], ipc returns: [boolean, unknown]
+    public bool BGetControllerConfigMessageForRemote(out CControllerConfigMsg msg);  // argc: 1, index: 11, ipc args: [], ipc returns: [boolean, unknown]
     public string GetSystemInfo();  // argc: 0, index: 12, ipc args: [], ipc returns: [string]
     // WARNING: Arguments are unknown!
     public void StartStreamingSession(ulong unk);  // argc: 1, index: 13, ipc args: [bytes8], ipc returns: []

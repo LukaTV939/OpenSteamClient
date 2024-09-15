@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -134,12 +135,33 @@ public sealed partial class CallbackManager : IDisposable {
 			}
 		}
 
+		bool BRunFrame()
+		{
+			steamClient.IClientEngine.RunFrame();
+
+			// Process callbacks
+			bool hadCallbacks = false;
+			while (BProcessCallback())
+			{
+				hadCallbacks = true;
+				if (!shouldThreadRun) { return false; }
+			}
+
+			lock (frameTasksLock)
+			{
+				foreach (var item in frameTasks)
+				{
+					item.Invoke();
+				}
+			}
+
+			return hadCallbacks;
+		}
+
 		// Tries to get and process a callback.
 		// If there's no callbacks, does nothing.
 		bool BProcessCallback() 
 		{
-			steamClient.IClientEngine.RunFrame();
-
 			var hadCallback = steamClient.BGetCallback(out CallbackMsg_t callbackMsg);
 			if (hadCallback) 
 			{
@@ -169,7 +191,7 @@ public sealed partial class CallbackManager : IDisposable {
 			}
 
 			// Eco-friendly mode: Wait until callbacks are available to not stress the CPU.
-			while (!BProcessCallback())
+			while (!BRunFrame())
 			{
 				if (!shouldThreadRun) { goto breakLoop; }
 
@@ -180,33 +202,89 @@ public sealed partial class CallbackManager : IDisposable {
 			// - Process all the callbacks we get during that frame, and start the next frame.
 			
 			// Process all the callbacks of the current frame with 0 delay
-			while (BProcessCallback()) 
-			{ 
+			while (BRunFrame()) { 
 				if (!shouldThreadRun) { goto breakLoop; }
 			}
 		}
 
 		shouldThreadRun = true;
 	}
+
+	private readonly object frameTasksLock = new();
+	private readonly List<Action> frameTasks = new();
+
+	/// <summary>
+	/// Runs the specified action after each frame.
+	/// </summary>
+	public void AddFrameTask(Action action)
+	{
+		lock (frameTasksLock)
+		{
+			frameTasks.Add(action);
+		}
+	}
+
+	/// <summary>
+	/// Stops the specified action being called each frame.
+	/// </summary>
+	public void RemoveFrameTask(Action action)
+	{
+		lock (frameTasksLock)
+		{
+			frameTasks.Remove(action);
+		}
+	}
+
+	/// <summary>
+	/// Runs the specified action after the next frame a single time.
+	/// </summary>
+	public void InvokeNextFrame(Action action)
+	{
+		// First define a no-op action
+		Action wrap = () => { };
+
+		// Then set the actual value
+		wrap = () => {
+			action();
+
+			// So that 'wrap' is valid here
+			RemoveFrameTask(wrap);	
+		};
+
+		AddFrameTask(wrap);
+	}
 	
 	public Task<T> WaitAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(CancellationToken cancellationToken = default) where T: struct {
 		TaskCompletionSource<T> taskCompletionSource = new();
 		object lockObj = new();
 
-		cancellationToken.Register(() => taskCompletionSource.SetCanceled(cancellationToken));
-
-		Register((ICallbackHandler handler, T cb) =>
+		var handler = Register((ICallbackHandler handler, T cb) =>
 		{
-			try
+			lock (lockObj)
 			{
-				taskCompletionSource.SetResult(cb);
-			}
-			catch (System.Exception)
-			{
-				// Don't care if the result has already been set.
-			}
+				try
+				{
+					taskCompletionSource.SetResult(cb);
+				}
+				catch (System.Exception)
+				{
+					// Don't care if the result has already been set.
+				}
 
-			handler.Dispose();
+				handler.Dispose();
+			}
+		});
+
+		cancellationToken.Register(() => {
+			lock (lockObj)
+			{
+				if (taskCompletionSource.Task.IsCompleted) {
+					return;
+				}
+				
+				handler.Dispose();
+				taskCompletionSource.SetCanceled(cancellationToken);
+			}
 		});
 
 		return taskCompletionSource.Task;
@@ -214,6 +292,7 @@ public sealed partial class CallbackManager : IDisposable {
 
 	public Task<T> WaitAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(Func<T, bool> checkFunction, CancellationToken cancellationToken = default) where T: struct {
 		TaskCompletionSource<T> taskCompletionSource = new();
+		object lockObj = new();
 
 		var handler = Register((ICallbackHandler handler, T cb) =>
 		{
@@ -222,21 +301,31 @@ public sealed partial class CallbackManager : IDisposable {
 				return;
 			}
 
-			try
+			lock (lockObj)
 			{
-				taskCompletionSource.SetResult(cb);
-			}
-			catch (System.Exception)
-			{
-				// Don't care if the result has already been set.
-			}
+				try
+				{
+					taskCompletionSource.SetResult(cb);
+				}
+				catch (System.Exception)
+				{
+					// Don't care if the result has already been set.
+				}
 
-			handler.Dispose();
+				handler.Dispose();
+			}
 		});
 
 		cancellationToken.Register(() => {
-			handler.Dispose();
-			taskCompletionSource.SetCanceled(cancellationToken);
+			lock (lockObj)
+			{
+				if (taskCompletionSource.Task.IsCompleted) {
+					return;
+				}
+				
+				handler.Dispose();
+				taskCompletionSource.SetCanceled(cancellationToken);
+			}
 		});
 
 		return taskCompletionSource.Task;

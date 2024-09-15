@@ -108,8 +108,8 @@ public class Bootstrapper {
     private readonly ILogger logger;
     private readonly ConfigManager configManager;
 
-    public Bootstrapper(InstallManager installManager, BootstrapperState bootstrapperState, ConfigManager configManager) {
-        this.logger = Logger.GetLogger("Bootstrapper", installManager.GetLogPath("Bootstrapper"));
+    public Bootstrapper(InstallManager installManager, ILoggerFactory loggerFactory, BootstrapperState bootstrapperState, ConfigManager configManager) {
+        this.logger = loggerFactory.CreateLogger("Bootstrapper");
         this.installManager = installManager;
         this.bootstrapperState = bootstrapperState;
         this.configManager = configManager;

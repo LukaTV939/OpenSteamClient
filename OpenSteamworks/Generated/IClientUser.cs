@@ -148,7 +148,7 @@ public unsafe interface IClientUser
     /// <summary>
     /// Takes a pointer to a protobuf object and populates it with the cell list.
     /// </summary>
-    public bool GetCellList([ProtobufPtrType(typeof(CMsgCellList))] IntPtr cells);  // argc: 1, index: 74, ipc args: [], ipc returns: [bytes1, unknown]
+    public bool GetCellList(out CMsgCellList cellList);  // argc: 1, index: 74, ipc args: [], ipc returns: [bytes1, unknown]
     public string GetUserBaseFolder();  // argc: 0, index: 75, ipc args: [], ipc returns: [string]
     public bool GetUserDataFolder(ref AppId_t appid, StringBuilder buf, int bufMax);  // argc: 3, index: 76, ipc args: [bytes8, bytes4], ipc returns: [bytes1, bytes_length_from_mem]
     public bool GetUserConfigFolder(StringBuilder buf, int bufMax);  // argc: 2, index: 77, ipc args: [bytes4], ipc returns: [bytes1, bytes_length_from_mem]

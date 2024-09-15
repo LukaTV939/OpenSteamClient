@@ -27,7 +27,7 @@ public class Logger : ILogger {
         }
     }
 
-    public static Logger GeneralLogger {
+    public static ILogger GeneralLogger {
         get {
             if (GeneralLoggerOverride != null) {
                 return GeneralLoggerOverride;
@@ -41,8 +41,8 @@ public class Logger : ILogger {
         }
     }
 
-    private static Logger? GeneralLoggerOverride;
-    private readonly static Lazy<Logger> LazyGeneralLogger = new(() => new("General"));
+    private static ILogger? GeneralLoggerOverride;
+    private readonly static Lazy<ILogger> LazyGeneralLogger = new(() => new Logger("General"));
 
     public string Name { get; set; } = "";
     public string? LogfilePath { get; init; } = null;
@@ -75,10 +75,10 @@ public class Logger : ILogger {
         public string AnsiColorSequence { get; set; }
         public string AnsiResetCode { get; set; }
         public bool FullLine { get; set; }
-        public DataReceivedEventArgs(LogLevel level, string text, bool fullLine, string ansiColorSequence, string ansiResetCode) {
+        public DataReceivedEventArgs(LogLevel level, string text, string ansiColorSequence, string ansiResetCode) {
             this.Level = level;
             this.Text = text;
-            this.FullLine = fullLine;
+            this.FullLine = text.EndsWith(Environment.NewLine);
             this.AnsiColorSequence = ansiColorSequence;
             this.AnsiResetCode = ansiResetCode;
         }
@@ -207,7 +207,7 @@ public class Logger : ILogger {
             }
         }
 
-        DataReceived?.Invoke(logger, new(level, formatted + Environment.NewLine, true, ansiColorCode, ansiResetCode));
+        DataReceived?.Invoke(logger, new(level, formatted, ansiColorCode, ansiResetCode));
     }
 
     private void AddData(LogLevel level, string message) {
@@ -227,7 +227,7 @@ public class Logger : ILogger {
             }
         }
 
-        DataReceived?.Invoke(logger, new(LogLevel.Info, message, false, string.Empty, string.Empty));
+        DataReceived?.Invoke(logger, new(LogLevel.Info, message, string.Empty, string.Empty));
     }
 
     /// <inheritdoc/>

@@ -91,11 +91,11 @@ public class LoginManager : IClientLifetime
 
     public bool IsAnonUser => this.CurrentUser?.SteamID.AccountType == EAccountType.AnonUser;
 
-    public LoginManager(ISteamClient steamClient, ClientApps clientApps, LoginUsers loginUsers, ConfigManager configManager, IContainer container, InstallManager installManager)
+    public LoginManager(ISteamClient steamClient, ClientApps clientApps, ILoggerFactory loggerFactory, LoginUsers loginUsers, ConfigManager configManager, IContainer container, InstallManager installManager)
     {
         this.clientApps = clientApps;
         this.configManager = configManager;
-        this.logger = Logger.GetLogger("LoginManager", installManager.GetLogPath("LoginManager"));
+        this.logger = loggerFactory.CreateLogger("LoginManager");
         this.container = container;
         this.steamClient = steamClient;
         this.loginUsers = loginUsers;
@@ -154,7 +154,7 @@ public class LoginManager : IClientLifetime
                 ProtoMsg<CAuthentication_BeginAuthSessionViaQR_Request> beginMsg = new("Authentication.BeginAuthSessionViaQR#1", true);
                 beginMsg.Body.DeviceDetails = DeviceDetails;
 
-                var beginResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_BeginAuthSessionViaQR_Response, CAuthentication_BeginAuthSessionViaQR_Request>(beginMsg);
+                var beginResp = await conn.SendAndWaitForServiceResponse<CAuthentication_BeginAuthSessionViaQR_Response, CAuthentication_BeginAuthSessionViaQR_Request>(beginMsg);
 
                 QRGenerated?.Invoke(this, new QRGeneratedEventArgs(beginResp.Body.ChallengeUrl));
                 
@@ -192,7 +192,7 @@ public class LoginManager : IClientLifetime
             ProtoMsg<CAuthentication_GetPasswordRSAPublicKey_Request> rsaRequest = new("Authentication.GetPasswordRSAPublicKey#1", true);
             rsaRequest.Body.AccountName = username;
 
-            var rsaResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_GetPasswordRSAPublicKey_Response, CAuthentication_GetPasswordRSAPublicKey_Request>(rsaRequest);
+            var rsaResp = await conn.SendAndWaitForServiceResponse<CAuthentication_GetPasswordRSAPublicKey_Response, CAuthentication_GetPasswordRSAPublicKey_Request>(rsaRequest);
 
             // Encrypt the password (this simple in C#)
             string encryptedPassword;
@@ -221,7 +221,7 @@ public class LoginManager : IClientLifetime
             beginMsg.Body.WebsiteId = "Client";
             beginMsg.Body.DeviceFriendlyName = DeviceDetails.DeviceFriendlyName;
 
-            var beginResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_BeginAuthSessionViaCredentials_Response, CAuthentication_BeginAuthSessionViaCredentials_Request>(beginMsg);
+            var beginResp = await conn.SendAndWaitForServiceResponse<CAuthentication_BeginAuthSessionViaCredentials_Response, CAuthentication_BeginAuthSessionViaCredentials_Request>(beginMsg);
             if (beginResp.Header.Eresult != (int)EResult.OK) {
                 return (EResult)beginResp.Header.Eresult;
             }
@@ -257,7 +257,7 @@ public class LoginManager : IClientLifetime
             updateMsg.Body.Code = code;
             updateMsg.Body.Steamid = InProgressLogonSteamID;
 
-            var updateResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_UpdateAuthSessionWithSteamGuardCode_Response, CAuthentication_UpdateAuthSessionWithSteamGuardCode_Request>(updateMsg);
+            var updateResp = await conn.SendAndWaitForServiceResponse<CAuthentication_UpdateAuthSessionWithSteamGuardCode_Response, CAuthentication_UpdateAuthSessionWithSteamGuardCode_Request>(updateMsg);
             return (EResult)updateResp.Header.Eresult;
         }
     }

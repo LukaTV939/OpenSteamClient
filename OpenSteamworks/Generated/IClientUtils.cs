@@ -191,7 +191,7 @@ public unsafe interface IClientUtils
     // ws://127.0.0.1:${e.portClientdll}/transportsocket/
     // - It has some sort of authentication system
     // - What does it do? Could it be useful in OpenSteamClient?
-    public bool GetWebUITransportInfo([ProtobufPtrType(typeof(CMsgWebUITransportInfo))] IntPtr protoptr);  // argc: 1, index: 106, ipc args: [], ipc returns: [bytes1, unknown]
+    public bool GetWebUITransportInfo(out CMsgWebUITransportInfo transportInfo);  // argc: 1, index: 106, ipc args: [], ipc returns: [bytes1, unknown]
     // WARNING: Arguments are unknown!
     public void RecordFakeReactRouteMetric(string unk);  // argc: 1, index: 107, ipc args: [string], ipc returns: []
     // WARNING: Arguments are unknown!

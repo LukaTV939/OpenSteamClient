@@ -127,7 +127,6 @@ Stuff marked rebranch-blocker is required to be solved before replacing the main
 - [ ] Disabling updates for certain apps
 - [ ] Custom SDL lib
   - [ ] Some valve specific code for handling steering wheels etc
-- [ ] ConCommand support
 - [ ] Download additional depots (example: CS2 workshop tools with proton needs Windows CS2 binaries)
   - Should be doable, just need to improve our hooking systems
 - [ ] UI Animations

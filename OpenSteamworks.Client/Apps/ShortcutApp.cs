@@ -62,14 +62,8 @@ public class ShortcutApp : AppBase {
     public override ILibraryAssetAlignment? LibraryAssetAlignment => null;
     public CMsgShortcutInfo ShortcutInfo {
         get {
-            using (var hack = ProtobufHack.Create<CMsgShortcutInfo>())
-            {
-                if (SteamClient.GetIClientShortcuts().GetShortcutInfoByAppID(this.ShortcutAppID, hack.ptr)) {
-                    return hack.GetManaged();
-                }
-            }
-
-            return new CMsgShortcutInfo();
+			SteamClient.GetIClientShortcuts().GetShortcutInfoByAppID(this.ShortcutAppID, out CMsgShortcutInfo shortcutInfo);
+            return shortcutInfo;
         }
     }
 

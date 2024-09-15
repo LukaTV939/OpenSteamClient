@@ -55,7 +55,7 @@ Do not expose fields, except for `internal` use.
 
 ### Long-running tasks
 For long running tasks (for example, updating persona states in the background), prefer using Task.Run or Thread.Start to make an always-running task or thread.
-For long running, oneshot tasks (for example logging in or updating appinfo), use async Task(s), and report progress via IExtendedProgress
+For long running, oneshot tasks (for example logging in or updating appinfo), use async Task(s), and report progress via `IProgress<OperationProgress>`
 
 ### Tests
 We don't currently have tests, as the project is still rapidly taking shape.

@@ -10,6 +10,7 @@ typedef Int32 HSteamUser;
 typedef UInt32 HImage;
 typedef UInt32 HHTMLBrowser;
 typedef UInt32 HImage;
+typedef UInt32 HSharedConnection;
 
 // _t types
 typedef Int32 LibraryFolder_t;

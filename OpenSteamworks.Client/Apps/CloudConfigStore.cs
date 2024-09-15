@@ -162,13 +162,13 @@ public class CloudConfigStore : ILogonLifetime {
     private readonly ILogger logger;
 
     public event EventHandler<EUserConfigStoreNamespace>? NamespaceUpdated;
-    public CloudConfigStore(LoginManager loginManager, IClientUtils clientUtils, InstallManager installManager) {
-        this.logger = Logger.GetLogger("CloudConfigStore", installManager.GetLogPath("CloudConfigStore"));
+    public CloudConfigStore(LoginManager loginManager, IClientUtils clientUtils, InstallManager installManager, ILoggerFactory loggerFactory) {
+        this.logger = loggerFactory.CreateLogger("CloudConfigStore");
         this.installManager = installManager;
         this.clientUtils = clientUtils;
         this.loginManager = loginManager;
 		this.connection = SharedConnection.AllocateConnection();
-		this.connection.AddServiceMethodHandler("CloudConfigStoreClient.NotifyChange#1", (SharedConnection.StoredMessage msg) => this.OnCloudConfigStoreClient_NotifyChange(ProtoMsg<CCloudConfigStore_Change_Notification>.FromBinary(msg.fullMsg)));
+		this.connection.RegisterServiceMsg("CloudConfigStoreClient.NotifyChange#1", (IConnectionMsgHandler handler, ProtoMsgBase msg) => this.OnCloudConfigStoreClient_NotifyChange(msg.AsProto<CCloudConfigStore_Change_Notification>()));
     }
 
     internal string GetNamespaceFilename(NamespaceData ns) {
@@ -321,7 +321,7 @@ public class CloudConfigStore : ILogonLifetime {
             Version = lastVersion
         });
 
-        var resp = await connection.ProtobufSendMessageAndAwaitResponse<CCloudConfigStore_Download_Response, CCloudConfigStore_Download_Request>(msg);
+        var resp = await connection.SendAndWaitForServiceResponse<CCloudConfigStore_Download_Response, CCloudConfigStore_Download_Request>(msg);
         if (resp.Body.Data.Count == 0) {
             logger.Error("Namespace " + @namespace + " doesn't exist.");
             throw new ArgumentException("Namespace " + @namespace + " doesn't exist.");
@@ -404,7 +404,7 @@ public class CloudConfigStore : ILogonLifetime {
             changes.Clear();
         }
 
-        var resp = await connection.ProtobufSendMessageAndAwaitResponse<CCloudConfigStore_Upload_Response, CCloudConfigStore_Upload_Request>(req);
+        var resp = await connection.SendAndWaitForServiceResponse<CCloudConfigStore_Upload_Response, CCloudConfigStore_Upload_Request>(req);
         foreach (var item in resp.Body.Versions)
         {
             var ns = this.loadedNamespaces.Find(n => (uint)n.Namespace == item.Enamespace);

@@ -139,9 +139,7 @@ using System.Diagnostics.CodeAnalysis;
 {usedNamespace}
 
 [DebuggerDisplay(""{{m_value}}"")]
-[StructLayout(LayoutKind.Explicit, Pack = 1)]
 public readonly struct {item.DefName} : IComparable, IConvertible, ISpanFormattable, IFormattable, IComparable<{item.DefName}>, IEquatable<{item.DefName}>, IBitwiseOperators<{item.DefName}, {item.DefName}, {item.DefName}>, IComparisonOperators<{item.DefName}, {item.DefName}, bool>, IEqualityOperators<{item.DefName}, {item.DefName}, bool>, ISpanParsable<{item.DefName}>, IParsable<{item.DefName}>, IUtf8SpanFormattable, IUtf8SpanParsable<{item.DefName}> {{
-	[FieldOffset(0)]
 	private readonly {item.Type} m_value;
 
 	private {item.DefName}({item.Type} value) => this.m_value = value;

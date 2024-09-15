@@ -10,7 +10,7 @@ namespace OpenSteamworks.Utils;
 /// This is terrible. Absolutely nothing about this should work.
 /// A class for marshalling managed protobuf objects to unmanaged pointers for the sake of interoperability with native binaries.
 /// </summary>
-public unsafe static class ProtobufHack {
+internal unsafe static class ProtobufHack {
     public class Proto_Disposable<T> : IDisposable where T: IMessage<T>, new()
     {
         private readonly delegate* unmanaged[Cdecl]<IntPtr, void> deletor;

@@ -11,7 +11,7 @@ using SourceGeneratorsKit;
 public class NativeClassSourceGenerator : ISourceGenerator
 {
 	public const string CPP_INTERFACE_ATTRIBUTE_NAME = "OpenSteamworks.Attributes.CppInterfaceAttribute";
-	public const string CROSSPROC_IPC_BLOCKED_ATTRIBUTE_NAME = "BlacklistedInCrossProcessIPCAttribute";
+	public const string CROSSPROC_IPC_BLOCKED_ATTRIBUTE_NAME = "OpenSteamworks.Attributes.BlacklistedInCrossProcessIPCAttribute";
     public SyntaxReceiver interfaceReceiver = new InterfacesWithAttributesReceiver(CPP_INTERFACE_ATTRIBUTE_NAME);
 	
 	private static string DetermineNativeReturnType(IMethodSymbol managedFunction) {
@@ -58,6 +58,12 @@ public class NativeClassSourceGenerator : ISourceGenerator
 		// Bool is not blittable. Use byte.
 		if (GetCSharpTypeName(type) == typeof(bool).FullName) {
 			return $"byte{ptrSuffix}";
+		}
+
+		// If it's a protobuf type, it gets marshalled via ProtobufHack.
+		if (type.AllInterfaces.Any(i => GetCSharpTypeName(i) == "Google.Protobuf.IMessage"))
+		{
+			return $"nint";
 		}
 
 		// Compatible interfaces get manually marshalled.
@@ -162,6 +168,8 @@ public class NativeClassSourceGenerator : ISourceGenerator
 			string varName = item.Name;
 			bool noFixed = false;
 
+			builder.AppendLine("//"+ string.Join(", ", item.Type.AllInterfaces.Select(GetCSharpTypeName)));
+
 			if (item.Type is IArrayTypeSymbol array) {
 				varType = GetCSharpTypeName(array.ElementType);
 
@@ -178,6 +186,23 @@ public class NativeClassSourceGenerator : ISourceGenerator
 				extraStatements.Add($"fixed ({varType}* {varName}_ptr = {varName}) {{");
 				postReturnBraces.Add($"}} // fixed {varName}");
 				nativeArgs.Add($"{varName}_ptr");
+				continue;
+			}
+
+			if (item.Type.AllInterfaces.Any(i => GetCSharpTypeName(i) == "Google.Protobuf.IMessage"))
+			{
+				extraStatements.Add($"using var {varName}_hack = ProtobufHack.Create<{GetCSharpTypeName(item.Type)}>();");
+				if (item.RefKind == RefKind.Ref || item.RefKind == RefKind.In || item.RefKind == RefKind.None) 
+				{
+					extraStatements.Add($"{varName}_hack.CopyFrom({varName});");
+				}
+
+				if (item.RefKind == RefKind.Ref || item.RefKind == RefKind.Out) 
+				{
+					postExtraStatements.Add($"{varName} = {varName}_hack.GetManaged();");
+				}
+				
+				nativeArgs.Add($"{varName}_hack.ptr");
 				continue;
 			}
 

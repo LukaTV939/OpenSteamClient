@@ -126,8 +126,8 @@ public class AppsManager : ILogonLifetime
         }
     }
 
-    public AppsManager(ISteamClient steamClient, IContainer container, ClientApps clientApps, InstallManager installManager) {
-        this.logger = Logger.GetLogger("AppsManager", installManager.GetLogPath("AppsManager"));
+    public AppsManager(ISteamClient steamClient, IContainer container, ClientApps clientApps, InstallManager installManager, ILoggerFactory loggerFactory) {
+        this.logger = loggerFactory.CreateLogger("AppsManager");
         this.container = container;
         this.ClientApps = clientApps;
         this.steamClient = steamClient;
@@ -370,7 +370,7 @@ public class AppsManager : ILogonLifetime
         HashSet<AppId_t> ownedApps = new();
         using (var conn = SharedConnection.AllocateConnection())
         {
-            response = await conn.ProtobufSendMessageAndAwaitResponse<Protobuf.CPlayer_GetOwnedGames_Response, Protobuf.CPlayer_GetOwnedGames_Request>(request);
+            response = await conn.SendAndWaitForServiceResponse<Protobuf.CPlayer_GetOwnedGames_Response, Protobuf.CPlayer_GetOwnedGames_Request>(request);
         }
 
         foreach (var protoApp in response.Body.Games)

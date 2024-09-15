@@ -32,10 +32,10 @@ public class CompatManager : ILogonLifetime {
         set => clientCompat.EnableCompat(value);
     }
 
-    public CompatManager(ISteamClient steamClient, AppsManager appsManager, InstallManager installManager, CallbackManager callbackManager) {
+    public CompatManager(ISteamClient steamClient, AppsManager appsManager, ILoggerFactory loggerFactory, InstallManager installManager, CallbackManager callbackManager) {
         this.appsManager = appsManager;
         this.steamClient = steamClient;
-        this.logger = Logger.GetLogger("CompatManager", installManager.GetLogPath("CompatManager"));
+        this.logger = loggerFactory.CreateLogger("CompatManager");
         this.clientCompat = steamClient.IClientCompat;
         RefreshCompatTools();
     }

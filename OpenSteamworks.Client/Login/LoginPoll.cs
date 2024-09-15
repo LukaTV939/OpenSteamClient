@@ -53,7 +53,7 @@ internal class LoginPoll {
         {
             while (IsPolling)
             {
-                ProtoMsg<CAuthentication_PollAuthSessionStatus_Response> pollResp = await conn.ProtobufSendMessageAndAwaitResponse<CAuthentication_PollAuthSessionStatus_Response, CAuthentication_PollAuthSessionStatus_Request>(pollMsg);
+                ProtoMsg<CAuthentication_PollAuthSessionStatus_Response> pollResp = await conn.SendAndWaitForServiceResponse<CAuthentication_PollAuthSessionStatus_Response, CAuthentication_PollAuthSessionStatus_Request>(pollMsg);
                 
                 if (pollResp.Body.HasNewClientId) {
                     pollMsg.Body.ClientId = pollResp.Body.NewClientId;

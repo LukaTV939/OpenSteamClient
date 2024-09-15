@@ -52,10 +52,10 @@ public class ConfigManager : IClientLifetime, ILogonLifetime {
     private readonly List<Type> registeredConfigs = new();
     public ReadOnlyCollectionEx<Type> RegisteredConfigs => new(registeredConfigs);
 
-    public ConfigManager(IContainer container, InstallManager installManager) {
+    public ConfigManager(IContainer container, ILoggerFactory loggerFactory, InstallManager installManager) {
         this.installManager = installManager;
         this.container = container;
-        this.logger = Logger.GetLogger("ConfigManager", this.installManager.GetLogPath("ConfigManager"));
+        this.logger = loggerFactory.CreateLogger("ConfigManager");
         container.RegisterFactoryMethod<AdvancedConfig>(() => Get<AdvancedConfig>());
         container.RegisterFactoryMethod<BootstrapperState>(() => Get<BootstrapperState>());
         container.RegisterFactoryMethod<GlobalSettings>(() => Get<GlobalSettings>());

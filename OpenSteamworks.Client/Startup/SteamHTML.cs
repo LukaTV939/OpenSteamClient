@@ -24,9 +24,9 @@ public class SteamHTML : IClientLifetime
     private readonly ILogger logger;
     private static RefCount initCount = new();
 
-    public SteamHTML(ISteamClient steamClient, InstallManager installManager, GlobalSettings globalSettings)
+    public SteamHTML(ISteamClient steamClient, InstallManager installManager, ILoggerFactory loggerFactory, GlobalSettings globalSettings)
     {
-        this.logger = Logger.GetLogger("SteamHTMLManager", installManager.GetLogPath("SteamHTMLManager"));
+        this.logger = loggerFactory.CreateLogger("SteamHTMLManager");
         this.steamClient = steamClient;
         this.installManager = installManager;
         this.globalSettings = globalSettings;

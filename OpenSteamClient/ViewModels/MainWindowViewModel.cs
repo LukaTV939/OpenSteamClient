@@ -64,9 +64,11 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
     private readonly LoginManager loginManager;
     private readonly AppsManager appsManager;
     private readonly MainWindow mainWindow;
+	private readonly ILogger logger;
 
-    public MainWindowViewModel(MainWindow mainWindow, ISteamClient client, AppsManager appsManager, TranslationManager tm, LoginManager loginManager, Action openSettingsWindowAction)
+    public MainWindowViewModel(MainWindow mainWindow, ISteamClient client, AppsManager appsManager, TranslationManager tm, LoginManager loginManager, ILoggerFactory loggerFactory, Action openSettingsWindowAction)
     {
+		this.logger = loggerFactory.CreateLogger("MainWindowViewModel");
         this.mainWindow = mainWindow;
         this.client = client;
         this.tm = tm;
@@ -152,7 +154,7 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
         }
         catch (System.Exception e)
         {
-            Logger.GetLogger("MainWindowViewModel").Error(e);
+            logger.Error(e);
         }
     }
 
@@ -163,20 +165,20 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
             byte[] dataoffset = data[4..];
 
             var state = CGameNetworkingUI_ConnectionState.Parser.ParseFrom(dataoffset);
-            Logger.GetLogger("MainWindowViewModel").Info("AddressRemote: " + state.AddressRemote);
-            Logger.GetLogger("MainWindowViewModel").Info("state: " + state.ConnectionState);
-            Logger.GetLogger("MainWindowViewModel").Info("appid: " + state.Appid);
-            Logger.GetLogger("MainWindowViewModel").Info("relay: " + state.SdrpopidLocal);
-            Logger.GetLogger("MainWindowViewModel").Info("datacenter: " + state.SdrpopidRemote);
-            Logger.GetLogger("MainWindowViewModel").Info("statustoken: " + state.StatusLocToken);
-            Logger.GetLogger("MainWindowViewModel").Info("server identity: " + state.IdentityRemote);
-            Logger.GetLogger("MainWindowViewModel").Info("local identity: " + state.IdentityLocal);
-            Logger.GetLogger("MainWindowViewModel").Info("ping: " + state.PingDefaultInternetRoute);
-            Logger.GetLogger("MainWindowViewModel").Info("connected for: " + state.E2EQualityLocal.Lifetime.ConnectedSeconds);
+            logger.Info("AddressRemote: " + state.AddressRemote);
+            logger.Info("state: " + state.ConnectionState);
+            logger.Info("appid: " + state.Appid);
+            logger.Info("relay: " + state.SdrpopidLocal);
+            logger.Info("datacenter: " + state.SdrpopidRemote);
+            logger.Info("statustoken: " + state.StatusLocToken);
+            logger.Info("server identity: " + state.IdentityRemote);
+            logger.Info("local identity: " + state.IdentityLocal);
+            logger.Info("ping: " + state.PingDefaultInternetRoute);
+            logger.Info("connected for: " + state.E2EQualityLocal.Lifetime.ConnectedSeconds);
         }
         catch (System.Exception e)
         {
-            Logger.GetLogger("MainWindowViewModel").Error(e);
+            logger.Error(e);
         }
     }
 

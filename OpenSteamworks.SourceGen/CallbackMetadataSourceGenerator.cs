@@ -27,10 +27,19 @@ public class CallbackMetadataSourceGenerator : ISourceGenerator
 	public static string {structSymbol.Name}_ToString({structSymbol.Name} cb) {{
 		StringBuilder builder = new();
 		builder.AppendLine(""Begin Callback {structSymbol.Name}"");");
-
-		foreach (var item in structSymbol.GetMembers().Where(m => typeof(IFieldSymbol).IsAssignableFrom(m.GetType()) || typeof(IPropertySymbol).IsAssignableFrom(m.GetType())))
+		
+		foreach (var item in structSymbol.GetMembers().Where(m => m is IFieldSymbol || m is IPropertySymbol))
 		{
-			if (item is IArrayTypeSymbol) {
+			ITypeSymbol type = null;
+			if (item is IFieldSymbol fieldSymbol) 
+			{
+				type = fieldSymbol.Type;
+			} else if (item is IPropertySymbol propertySymbol)
+			{
+				type = propertySymbol.Type;
+			}
+
+			if (type is IArrayTypeSymbol) {
 				// Handle arrays
 				builder.AppendLine($"		builder.AppendLine($\"    {item.Name}: {{EnumerableToString(cb.{item.Name})}}\");");
 				continue;

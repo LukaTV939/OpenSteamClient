@@ -173,14 +173,8 @@ public class TransportManager : ILogonLifetime
     public async Task RunLogon(IProgress<OperationProgress> progress)
     {
         steamClient.IClientUtils.SetWebUITransportWebhelperPID((uint)Environment.ProcessId);
-
-        using (var hack = ProtobufHack.Create<CMsgWebUITransportInfo>()) {
-
-            Logger.GeneralLogger.Trace("info: " + steamClient.IClientUtils.GetWebUITransportInfo(hack.ptr));
-            transportInfo = hack.GetManaged();
-        }
-
-        Logger.GeneralLogger.Trace(transportInfo.ToString());
+		steamClient.IClientUtils.GetWebUITransportInfo(out transportInfo);
+		Logger.GeneralLogger.Trace(transportInfo.ToString());
 
         transportWS = new ClientWebSocket();
         transportWS.Options.SetRequestHeader("Origin", "https://steamloopback.host");

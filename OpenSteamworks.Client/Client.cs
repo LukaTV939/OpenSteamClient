@@ -62,7 +62,7 @@ public class Client : IClientLifetime
         Instance = this;
         this.Container = container;
 
-        Logger.GeneralLogger = Logger.GetLogger("OpenSteamworks.Client", container.Get<InstallManager>().GetLogPath("OpenSteamworks.Client"));
+        Logger.GeneralLogger = container.Get<ILoggerFactory>().CreateLogger("OpenSteamworks.Client");
         container.RegisterFactoryMethod<ISteamClient>((Bootstrapper bootstrapper, AdvancedConfig advancedConfig, InstallManager im) =>
         {
 			LoggingSettings loggingSettings = new()

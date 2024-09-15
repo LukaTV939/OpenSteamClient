@@ -22,11 +22,11 @@ public partial class FriendsUI : IFriendsUI
 {
     private readonly FriendsListViewModel friendsListViewModel;
     private readonly FriendsManager friendsManager;
-    public Logger Logger { get; init; }
+    public ILogger Logger { get; init; }
 
-    public FriendsUI(FriendsManager friendsManager, InstallManager im)
+    public FriendsUI(FriendsManager friendsManager, InstallManager im, ILoggerFactory loggerFactory)
     {
-        this.Logger = Logger.GetLogger("FriendsUI", im.GetLogPath("FriendsUI"));
+        this.Logger = loggerFactory.CreateLogger("FriendsUI");
         this.friendsManager = friendsManager;
         friendsManager.EntityChanged += OnEntityChanged;
         this.friendsListViewModel = new(this, friendsManager);

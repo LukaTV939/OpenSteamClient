@@ -30,12 +30,12 @@ public class Library
     private readonly LibraryManager libraryManager;
 
     public event EventHandler? LibraryUpdated;
-    internal Library(LibraryManager libraryManager, ISteamClient steamClient, CloudConfigStore cloudConfigStore, LoginManager loginManager, AppsManager appsManager, InstallManager installManager)
+    internal Library(LibraryManager libraryManager, ISteamClient steamClient, ILoggerFactory loggerFactory, CloudConfigStore cloudConfigStore, LoginManager loginManager, AppsManager appsManager, InstallManager installManager)
     {
         this.libraryManager = libraryManager;
         this.Collections.Add(new Collection(libraryManager, "Uncategorized", "uncategorized", true));
         this.installManager = installManager;
-        this.logger = Logger.GetLogger("Library", installManager.GetLogPath("Library"));
+        this.logger = loggerFactory.CreateLogger("Library");
         this.steamClient = steamClient;
         this.cloudConfigStore = cloudConfigStore;
         cloudConfigStore.NamespaceUpdated += OnNamespaceUpdated;

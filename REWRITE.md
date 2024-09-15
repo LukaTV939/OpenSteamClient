@@ -9,13 +9,15 @@ Now, do it more smartly and tackle these issues individually, or in SMALL groups
 - [ ] Fix the app system.
 - [ ] Make the app system async.
 - [ ] And most importantly: Fix the app system.
-- [ ] Protobuf marshalling without IntPtr arguments
-- [ ] SharedConnection needs rework (segfaults when exiting)
+- [x] Protobuf marshalling without IntPtr arguments
+- [x] SharedConnection needs rework (segfaults when exiting)
+- [x] Something broke in SharedConnection, the app loads library forever. 
+- [ ] ProgressWindow doesn't pop up at all
 - [ ] OSWUpdater rewrite in C#
   - [ ] Maybe even the dumper. Someday.
-- [ ] DLL that houses the localization files, so it can be used anywhere, by anyone to get proper error strings.
+- [ ] DLL that houses the localization files, so it can be used anywhere, by anyone to get proper error and enum strings.
 - [ ] ConCommand system needs rewrite (again)
-- [ ] Refactor everything to use ILoggerFactory instead of Logger.GetLogger
+- [x] Refactor everything to use ILoggerFactory instead of Logger.GetLogger
 - [x] The logger looks terrible. Split by newlines.
 - [ ] Interface debugger is now broken for custom value types.
 - [ ] Figure out a way to cross compile Linux->Windows, or run GH actions on Windows too. 
@@ -27,12 +29,13 @@ Now, do it more smartly and tackle these issues individually, or in SMALL groups
   - [x] OpenSteamworks
   - [x] OpenSteamworks.Client
   - [x] OpenSteamworks.KeyValue
-  - [ ] OpenSteamClient
+  - [x] OpenSteamClient
+    - [ ] Fix remaining warnings
     - [ ] Interface debugger
-- [ ] Proper API:
+- [ ] Plugin API (not a priority):
   - [ ] Bootstrapper API
   - [ ] InstallManager API
-  - [ ] Plugin system (not a priority)
+  - [ ] Plugin-level
     - [ ] LibraryArt API
 	- [ ] AppManager API
 	- [ ] ModManager API

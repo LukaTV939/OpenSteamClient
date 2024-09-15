@@ -38,8 +38,8 @@ public class LibraryAssetsGenerator {
     private readonly ISteamClient steamClient;
     private readonly ILogger logger;
 
-    public LibraryAssetsGenerator(InstallManager installManager, ISteamClient steamClient, List<GenerateAssetRequest> assetRequests, Func<AppId_t, LibraryManager.ELibraryAssetType, string> getPathFunc) {
-        this.logger = Logger.GetLogger("LibraryAssetsGenerator", installManager.GetLogPath("LibraryAssetsGenerator"));
+    public LibraryAssetsGenerator(InstallManager installManager, ISteamClient steamClient, ILoggerFactory loggerFactory, List<GenerateAssetRequest> assetRequests, Func<AppId_t, LibraryManager.ELibraryAssetType, string> getPathFunc) {
+        this.logger = loggerFactory.CreateLogger("LibraryAssetsGenerator");
         this.steamClient = steamClient;
         this.assetRequests = assetRequests;
         this.getPathFunc = getPathFunc;
@@ -76,7 +76,7 @@ public class LibraryAssetsGenerator {
             };
 
             msg.Body.Context = new() { CountryCode = steamClient.IClientUser.GetUserCountry(), SteamRealm = (int)steamClient.IClientUtils.GetSteamRealm(), Elanguage = (int)ELanguageConversion.ELanguageFromAPIName(builder.ToString()), Language = builder.ToString() };
-            var resp = await conn.ProtobufSendMessageAndAwaitResponse<CStoreBrowse_GetItems_Response, CStoreBrowse_GetItems_Request>(msg);
+            var resp = await conn.SendAndWaitForServiceResponse<CStoreBrowse_GetItems_Response, CStoreBrowse_GetItems_Request>(msg);
             
             foreach (var item in resp.Body.StoreItems)
             {

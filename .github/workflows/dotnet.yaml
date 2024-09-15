@@ -18,13 +18,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Download repo and submodules
       run: | 
         git submodule update --init --recursive
       
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
@@ -43,7 +43,7 @@ jobs:
       run: sh -c 'zip -r "${GITHUB_WORKSPACE}/OpenSteamClient_Linux.zip" .'
 
     - name: Add OpenSteamClient Linux artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: OpenSteamClient (Linux)
         path: ${{ github.workspace }}/OpenSteamClient_Linux.zip
@@ -51,13 +51,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Download repo and submodules
       run: | 
         git submodule update --init --recursive
       
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
@@ -71,7 +71,7 @@ jobs:
       run: sh -c 'zip -r "${GITHUB_WORKSPACE}/OpenSteamClient_Windows.zip" .'
 
     - name: Add OpenSteamClient Windows artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: OpenSteamClient (Windows)
         path: ${{ github.workspace }}/OpenSteamClient_Windows.zip

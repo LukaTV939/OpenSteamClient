@@ -6,7 +6,7 @@
 	url = https://github.com/OpenSteamClient/OpenSteamworks.Native
 [submodule "OpenSteamClient.DI"]
 	path = OpenSteamClient.DI
-	url = git@github.com:OpenSteamClient/OpenSteamClient.DI.git
+	url = https://github.com/OpenSteamClient/OpenSteamClient.DI
 [submodule "OpenSteamClient.Logging"]
 	path = OpenSteamClient.Logging
-	url = git@github.com:OpenSteamClient/OpenSteamClient.Logging.git
+	url = https://github.com/OpenSteamClient/OpenSteamClient.Logging

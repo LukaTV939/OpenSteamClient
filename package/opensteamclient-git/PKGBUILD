@@ -7,7 +7,7 @@ arch=('x86_64')
 url="https://github.com/OpenSteamClient/OpenSteamClient/"
 license=('MIT')
 conflicts=('opensteamclient-bin' 'opensteam-git')
-makedepends=('dotnet-sdk cmake gcc gcc-libs')
+makedepends=('dotnet-sdk cmake clang zlib')
 optdepends=('lib32-glibc: steamservice support')
 source=("git+https://github.com/OpenSteamClient/OpenSteamClient.git#branch=c#-remake")
 sha256sums=('SKIP')
@@ -28,8 +28,7 @@ pkgver() {
 
 build() {
   cd "$srcdir/OpenSteamClient"
-  DOTNET_CLI_TELEMETRY_OPTOUT="1" dotnet publish MainExe \
-    --framework net8.0 \
+  DOTNET_CLI_TELEMETRY_OPTOUT="1" dotnet publish OpenSteamClient \
     --configuration Release \
     --output output
 }

@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Required by MainExe -->
-    <!-- <EnableDynamicLoading>true</EnableDynamicLoading> -->
-
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(CommonNetVersion)</TargetFramework>
     <Nullable>enable</Nullable>

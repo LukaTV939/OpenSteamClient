@@ -51,12 +51,13 @@ public partial class ClientNative {
     public NativeLibraryEx SteamClientLib;
 
     /// <summary>
-    /// Always defined on Windows, null on other platforms
+    /// Always available on Windows, null on other platforms
     /// </summary>
     [SupportedOSPlatform("windows")]
     public readonly NativeLibraryEx? Tier0Lib;
+	
     /// <summary>
-    /// Always defined on Windows, null on other platforms
+    /// Always available on Windows, null on other platforms
     /// </summary>
 
     [SupportedOSPlatform("windows")]

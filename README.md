@@ -206,7 +206,7 @@ NOTE: The features mentioned here are the criteria for release. These may not be
 # Contributing
 See [CONTRIBUTING.md](https://github.com/OpenSteamClient/OpenSteamClient/blob/c%23-remake/CONTRIBUTING.md) for guidelines.
 Clone by running `git clone -b c#-remake --single-branch https://github.com/OpenSteamClient/opensteamclient.git --recursive`
-Compile and run by going into MainExe and running `dotnet run`.
+Compile and run by going into OpenSteamClient and running `dotnet run`.
 Occasionally updates break existing repos, just delete the whole repo and reclone if that happens.
 
 ## Testing

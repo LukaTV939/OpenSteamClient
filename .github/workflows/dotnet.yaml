@@ -37,12 +37,12 @@ jobs:
       working-directory: ./OpenSteamClient
       run: dotnet publish --use-current-runtime -c Release
 
-	# Since NativeAOT doesn't cross compile, and we build on Linux, the release folder is only "release" and not "release_linux-x64"
+    # Since NativeAOT doesn't cross compile, and we build on Linux, the release folder is only "release" and not "release_linux-x64"
     - name: Create OpenSteamClient zip (Linux)
       working-directory: ./artifacts/publish/OpenSteamClient/release/
       run: sh -c 'zip -r "${GITHUB_WORKSPACE}/OpenSteamClient_Linux.zip" .'
 
-	# No NativeAOT cross compile, so just build a regular trimmed version instead.
+    # No NativeAOT cross compile, so just build a regular trimmed version instead.
     - name: Build Release OpenSteamClient (Windows)
       working-directory: ./OpenSteamClient
       run: dotnet publish --self-contained --runtime win-x64 -c Release /p:PublishAot=false

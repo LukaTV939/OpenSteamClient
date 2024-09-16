@@ -132,7 +132,7 @@ Stuff marked rebranch-blocker is required to be solved before replacing the main
 - [ ] UI Animations
   - Does avalonia support this?
 - [ ] VAC support
-  - Basically impossible unless we get a .valvesig from Valve, which is unlikely given the nature of our main exe being the regular dotnet runtime
+  - Basically impossible unless we get a .valvesig from Valve, which is unlikely since valve would have to acknowledge this project existance, which may be a bad thing
 - [ ] ProtonDB integration
 - [ ] Automatic game tweaking
 - [ ] External modding sources (like Nexus for Fallout games, r2modman for Lethal Company, etc)
@@ -156,6 +156,7 @@ Stuff marked rebranch-blocker is required to be solved before replacing the main
     - Could probably very simply just load the OG ui from the cached/ folder, but VGUI_s is 32-bit and we're 64-bit
     - Would need to reimplement the entire UI framework from scratch though
 - [ ] Reimplement steamclient.dll/so
+  - [ ] Investigate rewriting SteamService as 64-bit, and using box86 for loading 32-bit modules
 - [ ] MacOS
 - [ ] Reverse ZipVZ (ValveZip?) format
 
@@ -205,7 +206,7 @@ NOTE: The features mentioned here are the criteria for release. These may not be
 
 # Contributing
 See [CONTRIBUTING.md](https://github.com/OpenSteamClient/OpenSteamClient/blob/c%23-remake/CONTRIBUTING.md) for guidelines.
-Clone by running `git clone -b c#-remake --single-branch https://github.com/OpenSteamClient/opensteamclient.git --recursive`
+Clone by running `git clone -b c#-remake --single-branch https://github.com/OpenSteamClient/OpenSteamClient.git --recursive`
 Compile and run by going into OpenSteamClient and running `dotnet run`.
 Occasionally updates break existing repos, just delete the whole repo and reclone if that happens.
 

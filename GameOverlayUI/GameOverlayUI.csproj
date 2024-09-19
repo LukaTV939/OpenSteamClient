@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AvaloniaCommon\AvaloniaCommon.csproj" />
-    <ProjectReference Include="..\OpenSteamworks\OpenSteamworks.csproj" />
+	<PackageReference Include="OpenSteamworks" Version="$(CommonOSWVersion)"/>
     <ProjectReference Include="..\OpenSteamworks.Client\OpenSteamworks.Client.csproj" />
   </ItemGroup>
 </Project>

@@ -22,7 +22,6 @@ using OpenSteamClient.DI;
 using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Generated;
 using OpenSteamworks.Utils;
-using Profiler;
 using OpenSteamClient.DI.Lifetime;
 using OpenSteamClient.Logging;
 
@@ -76,8 +75,6 @@ public class TranslationManager : ILogonLifetime
 
     public void SetLanguage(ELanguage language, bool save = true)
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("SetLanguage");
-
         var lang = ELanguageToString(language);
         if (lang == null)
         {
@@ -187,8 +184,6 @@ public class TranslationManager : ILogonLifetime
     }
     public void TranslateAvaloniaObject(AvaloniaObject obj)
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("TranslateAvaloniaObject");
-
         if (!RefreshableObjects.Contains(obj))
         {
             RefreshableObjects.Add(obj);

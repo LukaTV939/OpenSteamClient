@@ -31,7 +31,6 @@ using OpenSteamworks.Data;
 using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
 using static OpenSteamworks.Callbacks.CallbackManager;
-using Profiler;
 using OpenSteamClient.DI.Lifetime;
 using OpenSteamworks.Callbacks;
 using OpenSteamClient.Logging;
@@ -234,7 +233,6 @@ public class AppsManager : ILogonLifetime
     /// <param name="gameid"></param>
     /// <returns></returns>
     public AppBase GetApp(CGameID gameid) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("AppsManager.GetApp(CGameID)");
         var existing = appCache.Find(a => a.GameID == gameid);
         if (existing != null) {
             return existing;
@@ -270,7 +268,6 @@ public class AppsManager : ILogonLifetime
     /// <param name="gameid"></param>
     /// <returns></returns>
     public AppBase GetApp(AppId_t appid) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("AppsManager.GetApp(AppId_t)");
         var existing = appCache.Find(a => a.AppID == appid);
         if (existing != null) {
             return existing;

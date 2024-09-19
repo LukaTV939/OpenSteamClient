@@ -30,7 +30,6 @@ using OpenSteamworks.Client.Friends;
 using OpenSteamClient.UIImpl;
 using OpenSteamworks.Client.Startup;
 using AvaloniaCommon;
-using Profiler;
 using System.Diagnostics;
 using OpenSteamClient.DI.Lifetime;
 using OpenSteamworks.Client.DI;
@@ -57,7 +56,6 @@ public class AvaloniaApp : Application
 
     public override void Initialize()
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("AvaloniaXamlLoader.Load");
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -71,7 +69,6 @@ public class AvaloniaApp : Application
 
     public override async void OnFrameworkInitializationCompleted()
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("OnFrameworkInitializationCompleted");
         Theme = new Theme(this);
 
 		Progress<OperationProgress> progress = new();
@@ -169,10 +166,7 @@ public class AvaloniaApp : Application
             }
         }
 
-        {
-            using var baseScope = CProfiler.CurrentProfiler?.EnterScope("base.OnFrameworkInitializationCompleted");
-            base.OnFrameworkInitializationCompleted();
-        }
+        base.OnFrameworkInitializationCompleted();
        
         var icons = TrayIcon.GetIcons(this);
         UtilityFunctions.AssertNotNull(icons);
@@ -374,7 +368,6 @@ public class AvaloniaApp : Application
     /// </summary>
     public async Task Exit(int exitCode = 0)
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("AvaloniaApp.Exit");
 		Progress<OperationProgress> operation = new();
 		var progVm = new ProgressWindowViewModel(operation);
         ForceProgressWindow(progVm);
@@ -383,10 +376,7 @@ public class AvaloniaApp : Application
         // At this point, all the other shutdown tasks should have finished so let's just kill
         Process.GetCurrentProcess().Kill();
 
-        // {
-        //     using var subScope = CProfiler.CurrentProfiler?.EnterScope("AvaloniaApp.Exit - Avalonia shutdown");
-        //     Dispatcher.UIThread.Invoke(() => ApplicationLifetime.Shutdown(exitCode));
-        // }
+        // Dispatcher.UIThread.Invoke(() => ApplicationLifetime.Shutdown(exitCode));
     }
 
     /// <summary>

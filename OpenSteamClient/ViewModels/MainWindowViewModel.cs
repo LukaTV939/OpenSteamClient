@@ -33,7 +33,6 @@ using OpenSteamworks.Messaging;
 using OpenSteamworks.Protobuf;
 using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
-using Profiler;
 using OpenSteamClient.DI;
 using OpenSteamClient.Logging;
 using OpenSteamClient.DI.Lifetime;
@@ -205,10 +204,6 @@ public partial class MainWindowViewModel : AvaloniaCommon.ViewModelBase
         HTMLSurfaceTest testWnd = new();
         testWnd.Show();
         await testWnd.Init("Valve Steam Client", "https://google.com/");
-    }
-
-    public void DBG_DumpProfiler() {
-        CProfiler.CurrentProfiler?.PrintStats();
     }
 
     public void Quit()

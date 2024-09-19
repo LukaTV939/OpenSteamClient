@@ -8,7 +8,6 @@ using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Data;
 using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
-using Profiler;
 using OpenSteamClient.Logging;
 
 namespace OpenSteamworks.Client.Apps.Library;
@@ -58,7 +57,6 @@ public class Library
 
     internal async Task<HashSet<CGameID>> InitializeLibrary()
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Library.InitializeLibrary");
         HashSet<CGameID> AppIDsInCollections = new();
 
         // If we're an anonymous user, we don't have any namespace data, so don't even try

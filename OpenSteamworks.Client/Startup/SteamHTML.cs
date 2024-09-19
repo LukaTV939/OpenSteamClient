@@ -6,7 +6,6 @@ using OpenSteamworks.Client.Config;
 using System.Text;
 using OpenSteamworks.Data.Enums;
 using OpenSteamworks.Utils;
-using Profiler;
 using OpenSteamClient.DI.Lifetime;
 using OpenSteamClient.Logging;
 
@@ -35,8 +34,6 @@ public class SteamHTML : IClientLifetime
     [SupportedOSPlatform("linux")]
     private void StartHTMLHost()
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("SteamHTML.StartHTMLHost");
-
         lock (CurrentHTMLHostLock)
         {
             logger.Info("Creating steamwebhelper process");

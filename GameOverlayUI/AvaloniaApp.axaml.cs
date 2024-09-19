@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using OpenSteamClient.DI;
 using Avalonia.Threading;
 using AvaloniaCommon;
-using Profiler;
 using System.Diagnostics;
 using GameOverlayUI.ViewModels;
 using GameOverlayUI.IPC;
@@ -29,7 +28,6 @@ public class AvaloniaApp : Application
 
     public override void Initialize()
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("AvaloniaXamlLoader.Load");
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -43,7 +41,6 @@ public class AvaloniaApp : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("OnFrameworkInitializationCompleted");
         Theme = new Theme(this);
 
         var mainViewViewModel = new MainViewViewModel();
@@ -59,10 +56,7 @@ public class AvaloniaApp : Application
         
         ForceWindow(mainView);
         
-        {
-            using var baseScope = CProfiler.CurrentProfiler?.EnterScope("base.OnFrameworkInitializationCompleted");
-            base.OnFrameworkInitializationCompleted();
-        }
+        base.OnFrameworkInitializationCompleted();
 
         serverThread = new(ServerThreadMain);
         serverThread.Start();
@@ -301,7 +295,6 @@ public class AvaloniaApp : Application
     /// </summary>
     public async Task Exit(int exitCode = 0)
     {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("AvaloniaApp.Exit");
         Progress<string> operation = new();
         Progress<string> subOperation = new();
         await Program.Container.RunClientShutdown(operation, subOperation);

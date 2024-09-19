@@ -10,8 +10,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.IO.Hashing" Version="8.0.0" />
-		<PackageReference Include="OpenSteamworks.Protobuf" Version="*"/>
-		<PackageReference Include="OpenSteamworks.Utils" Version="*"/>
+		<PackageReference Include="OpenSteamworks.Protobuf" Version="$(CommonOSWVersion)"/>
+		<PackageReference Include="OpenSteamworks.Utils" Version="$(CommonOSWVersion)"/>
 	</ItemGroup>
 
 </Project>

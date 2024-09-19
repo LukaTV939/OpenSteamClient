@@ -3,7 +3,6 @@ using System.Reflection;
 using OpenSteamworks.Client;
 using OpenSteamworks.Client.Managers;
 using OpenSteamworks.Client.Utils;
-using Profiler;
 using OpenSteamworks.Client.DI;
 using OpenSteamClient.DI;
 using OpenSteamClient.Logging;

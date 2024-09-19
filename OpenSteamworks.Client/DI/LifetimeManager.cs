@@ -3,7 +3,6 @@ using OpenSteamClient.DI.Attributes;
 using OpenSteamClient.DI.Lifetime;
 using OpenSteamClient.Logging;
 using OpenSteamworks.Client.Managers;
-using Profiler;
 
 namespace OpenSteamworks.Client.DI;
 
@@ -133,13 +132,11 @@ public class LifetimeManager : ILifetimeManager {
 	private readonly SemaphoreSlim clientLifetimeLock = new(1, 1);
 	public async Task RunClientStartup(IProgress<OperationProgress> progress)
     {
-		using var scope = CProfiler.CurrentProfiler?.EnterScope("RunClientStartup - Wait for lock");
 		await clientLifetimeLock.WaitAsync();
 		try
 		{
 			foreach (var component in clientLifetimeOrder)
 			{
-				using var subScope = CProfiler.CurrentProfiler?.EnterScope("RunClientStartup - " + component.ToString());
 				logger.Info("Running startup for " + component.ToString());
 				await component.RunClientStartup(progress);
 				logger.Info("Startup for " + component.ToString() + " finished");
@@ -155,7 +152,6 @@ public class LifetimeManager : ILifetimeManager {
 
     public async Task RunClientShutdown(IProgress<OperationProgress> progress)
     {
-		using var scope = CProfiler.CurrentProfiler?.EnterScope("RunClientShutdown - Wait for lock");
 		await clientLifetimeLock.WaitAsync();
 		try
 		{
@@ -167,7 +163,6 @@ public class LifetimeManager : ILifetimeManager {
 			hasRanStartup = false;
 			foreach (var component in clientLifetimeOrder)
 			{
-				using var subScope = CProfiler.CurrentProfiler?.EnterScope("RunClientShutdown - " + component.ToString());
 				logger.Info("Running shutdown for " + component.ToString());
 				await component.RunClientShutdown(progress);
 				logger.Info("Shutdown for " + component.ToString() + " finished");
@@ -182,13 +177,11 @@ public class LifetimeManager : ILifetimeManager {
 	private readonly SemaphoreSlim logonLock = new(1, 1);
     public async Task RunLogon(IProgress<OperationProgress> progress)
     {
-		using var scope = CProfiler.CurrentProfiler?.EnterScope("RunLogon - Wait for lock");
 		await logonLock.WaitAsync();
 		try
 		{
 			foreach (var component in logonLifetimeOrder)
 			{
-				using var subScope = CProfiler.CurrentProfiler?.EnterScope("RunLogon - " + component.ToString());
 				logger.Info("Running logon for component " + component.ToString());
 				await component.RunLogon(progress);
 			}
@@ -201,14 +194,11 @@ public class LifetimeManager : ILifetimeManager {
 
     public async Task RunLogoff(IProgress<OperationProgress> progress)
     {
-		using var scope = CProfiler.CurrentProfiler?.EnterScope("RunLogoff - Wait for lock");
 		await logonLock.WaitAsync();
 		try
 		{
 			foreach (var component in logonLifetimeOrder)
-			{
-				using var subScope = CProfiler.CurrentProfiler?.EnterScope("RunLogoff - " + component.ToString());
-				
+			{				
 				logger.Info("Running logoff for component " + component.ToString());
 				await component.RunLogoff(progress);
 				logger.Info("Logoff for component " + component.ToString() + " finished");

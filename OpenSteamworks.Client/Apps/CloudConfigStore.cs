@@ -18,7 +18,6 @@ using OpenSteamworks.Messaging;
 using OpenSteamworks.Protobuf.WebUI;
 using OpenSteamworks.Data.Structs;
 using OpenSteamworks.Utils;
-using Profiler;
 using OpenSteamClient.DI.Lifetime;
 using OpenSteamClient.Logging;
 
@@ -246,8 +245,6 @@ public class CloudConfigStore : ILogonLifetime {
     /// If the namespace is currently loaded, it will be used instead of trying the internet and cache.
     /// </summary>
     public async Task<NamespaceData> GetNamespaceData(EUserConfigStoreNamespace @namespace) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("CloudConfigStore.GetNamespaceData");
-
         if (loginManager.CurrentUser == null || loginManager.CurrentUser.SteamID == 0) {
             logger.Error("Cannot retrieve namespace data without a login.");
             throw new InvalidOperationException("Cannot retrieve namespace data without a login.");
@@ -313,7 +310,6 @@ public class CloudConfigStore : ILogonLifetime {
     /// Downloads namespace data from the server. Does not use the cache and will never use local data.
     /// </summary>
     internal async Task<CCloudConfigStore_NamespaceData> DownloadNamespace(EUserConfigStoreNamespace @namespace, ulong lastVersion) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("CloudConfigStore.DownloadNamespace");
         logger.Info("Downloading namespace " + @namespace);
         ProtoMsg<CCloudConfigStore_Download_Request> msg = new("CloudConfigStore.Download#1");
         msg.Body.Versions.Add(new CCloudConfigStore_NamespaceVersion() {

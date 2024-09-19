@@ -5,7 +5,6 @@ using OpenSteamworks;
 using OpenSteamClient.DI;
 using OpenSteamworks.Client.Config;
 using OpenSteamworks.Client.Utils;
-using Profiler;
 using OpenSteamClient.DI.Lifetime;
 using OpenSteamClient.Logging;
 
@@ -41,7 +40,6 @@ public class SteamService : IClientLifetime {
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("osx")]
     public void StartServiceAsHost(string pathToHost) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("SteamService.StartServiceAsHost");
         FailedToStart = false;
         lock (CurrentServiceHostLock)
         {

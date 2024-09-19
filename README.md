@@ -208,7 +208,7 @@ NOTE: The features mentioned here are the criteria for release. These may not be
 See [CONTRIBUTING.md](https://github.com/OpenSteamClient/OpenSteamClient/blob/c%23-remake/CONTRIBUTING.md) for guidelines.
 Clone by running `git clone -b c#-remake --single-branch https://github.com/OpenSteamClient/OpenSteamClient.git --recursive`
 Compile and run by going into OpenSteamClient and running `dotnet run`.
-Occasionally updates break existing repos, just delete the whole repo and reclone if that happens.
+Occasionally updates break existing downloaded repos, just delete the whole repo and reclone if that happens.
 
 ## Testing
 If you decide to test OSC, you should report issues in GitHub issues.
@@ -223,25 +223,22 @@ Once this is in a good enough state I will write new install instructions.
 
 # System requirements
 ## Windows
-- Windows 10 tested
+- Windows 10
 ### For development
-- MSVC
+- Dotnet 8
 ## Linux
-### For development
 - Arch Linux
-- MingW 10.0.0/GCC12 (optional if Windows cross compile not wanted)
-- GCC, G++, CMake
+### For development
+- Dotnet 8
 
 ## Credits
-Decompiling and datamining the steam client: 
+Research resources we've used: 
 - [open-steamworks](https://github.com/SteamRE/open-steamworks)
 - [open-steamworks fork by m4dEngi](https://github.com/m4dEngi/open-steamworks)
 - [SteamTracking](https://github.com/SteamDatabase/SteamTracking)
 - [protobufs dumped from the steam client](https://github.com/SteamDatabase/Protobufs)
 Other credits:
-- [MiniUTL](https://github.com/FWGS/MiniUTL)
-- [Logo by nPHYN1T3](https://github.com/nPHYN1T3)
-- [Sound assets by nPHYN1T3](https://github.com/nPHYN1T3)
+- [Logo and sound assets by nPHYN1T3](https://github.com/nPHYN1T3)
 
 # Q&A
 
@@ -258,10 +255,8 @@ Due to this, we cannot fix everything, such as the client not conforming to the 
 Also, thank you Valve for improving Linux gaming, and making a native Steam Client in the first place.
 
 ## What version of Steam's binaries do you use?
-The repo includes a copy of all the manifests at `Manifests/steam_client_PLATFORM.vdf`, which shows the version and has download paths for the binaries.
-The `file` names point to regular zip files at the various client download addresses like `https://client-update.akamai.steamstatic.com/`, just use `unzip`. GUI tools don't seem to work.
-`zipvz` seems to be some sort of proprietary zip format, which we haven't reversed.
+The same as OpenSteamworks, available [here](https://github.com/OpenSteamClient/OpenSteamworks/tree/master/Manifests)
 
 ## The client crashes a lot or doesn't start
-Delete `~/.local/share/OpenSteam` and try again. Also check that you have a PC that meets the requirements for Steam officially.
+Delete `~/.local/share/OpenSteam` and try again. Also check that you have a PC that meets the requirements for Steam officially, as well as OpenSteamClient.
 Also, run OpenSteamClient from the terminal and post the logs in a Github issue clearly describing your situation. 

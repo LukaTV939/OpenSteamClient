@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\OpenSteamworks.Protobuf\OpenSteamworks.Protobuf.csproj" />
+    <PackageReference Include="OpenSteamworks.Protobuf" Version="$(CommonOSWVersion)"/>
   </ItemGroup>
 
 </Project>

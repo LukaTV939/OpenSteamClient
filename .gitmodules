@@ -1,9 +1,3 @@
-[submodule "OpenSteamworks.Protobuf"]
-	path = OpenSteamworks.Protobuf
-	url = https://github.com/OpenSteamClient/OpenSteamworks.Protobuf
-[submodule "OpenSteamworks.Native"]
-	path = OpenSteamworks.Native
-	url = https://github.com/OpenSteamClient/OpenSteamworks.Native
 [submodule "OpenSteamClient.DI"]
 	path = OpenSteamClient.DI
 	url = https://github.com/OpenSteamClient/OpenSteamClient.DI

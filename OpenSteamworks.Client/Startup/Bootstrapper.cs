@@ -20,7 +20,6 @@ using OpenSteamworks.KeyValue.ObjectGraph;
 using OpenSteamworks.KeyValue.Deserializers;
 using OpenSteamworks.KeyValue.Serializers;
 using System.Collections.ObjectModel;
-using Profiler;
 using OpenSteamClient.Logging;
 using OpenSteamClient.DI.Lifetime;
 
@@ -154,7 +153,6 @@ public class Bootstrapper {
     }
 
     public async Task RunBootstrap(Action<string, string> msgBoxProvider) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap");
         if (progressHandler == null) {
             progressHandler = new Progress<OperationProgress>();
         }
@@ -178,7 +176,6 @@ public class Bootstrapper {
         
         try
         {
-            using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap - Detect local package server");
             using (HttpResponseMessage resp = await Client.HttpClient.GetAsync(bootstrapperState.LocalPackageServerURL+PlatformClientManifest))
             {
                 if (resp.IsSuccessStatusCode) {
@@ -207,7 +204,6 @@ public class Bootstrapper {
 
         // Windows only hack.
         if (OperatingSystem.IsWindows()) {
-            using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap - Wait for existing process termination");
             IEnumerable<Process> processes;
             while (true)
             {
@@ -250,7 +246,6 @@ public class Bootstrapper {
 
         // Linux only hack.
         if (OperatingSystem.IsLinux()) {
-            using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap - Wait for existing process termination");
             IEnumerable<Process> processes;
             while (true)
             {
@@ -294,7 +289,6 @@ public class Bootstrapper {
 
             if (!bootstrapperState.LinuxPermissionsSet)
             {
-                using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap - Linux: Set permissions");
 				progressHandler.Report(new("Marking files as executable"));
 
                 // Valve doesn't include permission info in the zips, so chmod them all to allow execute
@@ -306,8 +300,6 @@ public class Bootstrapper {
             //TODO: check for steam some other way (like trying to connect via IPC)
             Process[] runningSteamProcesses = Process.GetProcessesByName("steam");
             if (runningSteamProcesses.Length == 0) {
-                using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.RunBootstrap - Linux: Update datalink");
-
                 Directory.CreateDirectory(installManager.DatalinkDir);
 
                 // This is ok, since steam automatically changes the target of these symlinks to it's own install path on start.
@@ -516,8 +508,6 @@ public class Bootstrapper {
     [SupportedOSPlatform("linux")]
     private void MakeXDGCompliant()
     {
-        using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.MakeXDGCompliant");
-
         var logsSymlink = Path.Combine(installManager.InstallDir, "logs");
         if (!Directory.Exists(logsSymlink))
             Directory.CreateSymbolicLink(logsSymlink, installManager.LogsDir);
@@ -594,8 +584,6 @@ public class Bootstrapper {
     }
     
     private bool VerifyFiles(IProgress<OperationProgress> progressHandler, out IEnumerable<string> failureReason) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.VerifyFiles");
-
         var failureReasons = new List<string>();
         // Verify all files and skip this step if files are valid and version matches 
         bool failedSteamVer = bootstrapperState.InstalledVersion != VersionInfo.STEAM_MANIFEST_VERSION;
@@ -651,12 +639,10 @@ public class Bootstrapper {
     }
 
     private async Task EnsurePackages(Action<string, string> msgBoxProvider, IProgress<OperationProgress> progressHandler) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.EnsurePackages");
-
         downloadedPackages.Clear();
 
-        // Fetch the manifests from OpenSteamworks.Client.dll
-        var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
+        // Fetch the manifests from OpenSteamworks.dll
+        var embeddedProvider = new EmbeddedFileProvider(typeof(SteamClient).Assembly);
         IFileInfo fileInfo = embeddedProvider.GetFileInfo($"{PlatformClientManifest}.vdf");
         if (!fileInfo.Exists) {
             throw new Exception($"Cannot find {PlatformClientManifest}.vdf as an embedded resource.");
@@ -781,8 +767,6 @@ public class Bootstrapper {
     });
 
     private async Task ExtractPackages(IProgress<OperationProgress> progressHandler) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.ExtractPackages");
-
         // Extract all the packages
         progressHandler.Report(new($"Extracting packages"));
 
@@ -802,7 +786,6 @@ public class Bootstrapper {
     
     [SupportedOSPlatform("linux")] 
     private async Task CheckSteamRuntime(IProgress<OperationProgress> progressHandler) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CheckSteamRuntime");
         await CheckSteamRuntimeSingle(progressHandler, Ubuntu12_32Dir);
         try
         {
@@ -817,8 +800,6 @@ public class Bootstrapper {
 
     [SupportedOSPlatform("linux")]
     private async Task CheckSteamRuntimeSingle(IProgress<OperationProgress> progressHandler, string rootPath, string flavour = "") {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CheckSteamRuntimeSingle");
-
         string flavourPrefix = string.Empty;
 
         if (!string.IsNullOrEmpty(flavour)) {
@@ -869,7 +850,6 @@ public class Bootstrapper {
         if (hasSetupScript)
         {
             // Always run setup.sh (if it exists)
-            using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CheckSteamRuntimeSingle - Runtime setup.sh");
             progressHandler.Report(new($"Processing Steam Runtime ({flavour})", "Running runtime setup"));
 
             Process proc = new();
@@ -899,7 +879,6 @@ public class Bootstrapper {
 
     [SupportedOSPlatform("linux")]
     private async Task ExtractSteamRuntime(string rootPath, string flavourPrefix) {
-        using var scope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.ExtractSteamRuntime");
         string runtimeDir = Path.Combine(rootPath, $"steam-runtime{flavourPrefix}");
 
         Directory.CreateDirectory(runtimeDir);
@@ -933,32 +912,26 @@ public class Bootstrapper {
             }
         }
         
-        {
-            using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.ExtractSteamRuntime - Unzip");
+		Process proc = new();
+		proc.StartInfo.FileName = "tar";
+		proc.StartInfo.Arguments = $"-xvJf steam-runtime{flavourPrefix}.tar.xz -C steam-runtime{flavourPrefix} --strip-components=1";
+		proc.StartInfo.WorkingDirectory = rootPath;
+		proc.StartInfo.CreateNoWindow = true;
+		proc.StartInfo.UseShellExecute = false;
 
-            Process proc = new();
-            proc.StartInfo.FileName = "tar";
-            proc.StartInfo.Arguments = $"-xvJf steam-runtime{flavourPrefix}.tar.xz -C steam-runtime{flavourPrefix} --strip-components=1";
-            proc.StartInfo.WorkingDirectory = rootPath;
-            proc.StartInfo.CreateNoWindow = true;
-            proc.StartInfo.UseShellExecute = false;
+		logger.Info($"Starting tar");
+		proc.Start();
 
-            logger.Info($"Starting tar");
-            proc.Start();
+		logger.Info($"Waiting for tar to exit...");
+		await proc.WaitForExitAsync();
+		logger.Info($"tar exited with code {proc.ExitCode}");
 
-            logger.Info($"Waiting for tar to exit...");
-            await proc.WaitForExitAsync();
-            logger.Info($"tar exited with code {proc.ExitCode}");
-
-            if (proc.ExitCode != 0)  {
-                throw new Exception("tar exited with failure exitcode: " + proc.ExitCode);
-            }
-        }
+		if (proc.ExitCode != 0)  {
+			throw new Exception("tar exited with failure exitcode: " + proc.ExitCode);
+		}
     }
 
     private void CopyOpensteamFiles(IProgress<OperationProgress> progressHandler) {
-        using var subScope = CProfiler.CurrentProfiler?.EnterScope("Bootstrapper.CopyOpensteamFiles");
-
         // Specify path mappings here to copy certain natives
         List<KeyValuePair<string, string>> pathMappings = new() {
             new("reaper", "linux64/reaper"),

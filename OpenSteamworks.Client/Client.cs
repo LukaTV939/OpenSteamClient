@@ -70,8 +70,10 @@ public class Client : IClientLifetime
 				LoggerFactory = container.Get<ILoggerFactory>()
 			};
 
-            return new SteamClient(bootstrapper.SteamclientLibPath, advancedConfig.EnabledConnectionTypes, loggingSettings);
-        });
+            var client = new SteamClient(bootstrapper.SteamclientLibPath, advancedConfig.EnabledConnectionTypes, loggingSettings);
+			client.SetUIProcessIfNewClient();
+			return client;
+		});
         
         container.RegisterFactoryMethod<CallbackManager>((ISteamClient client) => client.CallbackManager);
         container.RegisterFactoryMethod<ClientApps>((ISteamClient client) => client.ClientApps);

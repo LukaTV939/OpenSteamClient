@@ -101,7 +101,7 @@ Stuff marked rebranch-blocker is required to be solved before replacing the main
   - [ ] Installer
   - [ ] Uninstaller
 - [ ] Close OpenSteamClient when pressing X on the progress dialog
-- [ ] Split project into multi-repo OpenSteamworks, OpenSteamClient
+- [x] Split project into multi-repo OpenSteamworks, OpenSteamClient
 
 ## TODO: Future/Never
 - [ ] Employ observability at the OSW.Client layer
@@ -109,7 +109,7 @@ Stuff marked rebranch-blocker is required to be solved before replacing the main
 - In the future, this would allow pure C# instead of needing a dependency on the native client and JITEngine
   - IClientEngine and some bits of init would still be unavoidable
 - This requires us to know 100% of the interfaces (and would be a pretty big rewrite)
-- [ ] Remove JITEngine in favour of code generation (probably no, but could be good for API consumers that want NativeAOT)
+- [x] Remove JITEngine in favour of code generation
 - [ ] Rewrite InterfaceDebugger to follow MVVM
 - [ ] Plugin system
   - This'd be useful for making sure our code is high quality and not a mess
@@ -167,7 +167,7 @@ We support:
 Anything else is not officially supported, and your issue may get closed.
 
 # Features
-NOTE: The features mentioned here are the criteria for release. These may not be implemented yet! And these also aren't final
+NOTE: The features mentioned here are the criteria for full release. These may not be implemented yet! And these also aren't final ATM.
 - The basics you'd expect:
   - Achievements
   - Steam Cloud

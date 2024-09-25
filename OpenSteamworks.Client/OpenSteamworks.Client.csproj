@@ -40,7 +40,7 @@ public static class GitInfo
     <PackageReference Include="SkiaSharp" Version="2.88.7" />
 	<PackageReference Include="OpenSteamworks" Version="$(CommonOSWVersion)"/>
 	<PackageReference Include="OpenSteamworks.Messaging" Version="$(CommonOSWVersion)"/>
-	<PackageReference Include="OpenSteamClient.DI" Version="1.0.2"/>
+	<PackageReference Include="OpenSteamClient.DI" Version="1.0.3"/>
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">

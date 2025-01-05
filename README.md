@@ -260,3 +260,5 @@ The same as OpenSteamworks, available [here](https://github.com/OpenSteamClient/
 ## The client crashes a lot or doesn't start
 Delete `~/.local/share/OpenSteam` and try again. Also check that you have a PC that meets the requirements for Steam officially, as well as OpenSteamClient.
 Also, run OpenSteamClient from the terminal and post the logs in a Github issue clearly describing your situation. 
+
+Now how the fuck do I do github actions on a fork? Let's find out
